@@ -1,6 +1,0 @@
-helmCharts:
-- name: operator-crds
-
-- name: operator
-  namespace: toolhive-system
-  valuesFile: values-openshift.yaml

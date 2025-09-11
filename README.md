@@ -8,8 +8,8 @@ TBD
 
 ## Development
 
-Build from `helm` charts:
+Build `kustomize` manifests:
 
 ```shell
-kustomize build --enable-helm config/helm
+kustomize build config/default
 ```

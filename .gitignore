@@ -1,0 +1,27 @@
+# Binaries and build artifacts
+bin/
+testbin/
+_output/
+
+# Kubernetes Generated files
+bundle/
+bundle.Dockerfile
+
+# Common IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+cover.out
+coverage.txt
+
+# Local development files
+.env
+.env.local

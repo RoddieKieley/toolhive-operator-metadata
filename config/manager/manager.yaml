@@ -46,7 +46,7 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             runAsUser: 1000
-          image: controller
+          image: ghcr.io/stacklok/toolhive/operator:v0.2.17
           imagePullPolicy: IfNotPresent
           args:
           - --leader-elect

@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../default
+
+namespace: opendatahub
+
+configMapGenerator:
+  - envs:
+      - params.env
+    name: toolhive-operator-parameters
+generatorOptions:
+  disableNameSuffixHash: true
+
+replacements:
+  - source:
+      kind: ConfigMap
+      version: v1
+      name: toolhive-operator-parameters
+      fieldPath: data.toolhive-operator-image
+    targets:
+      - select:
+          kind: Deployment
+          name: controller-manager
+        fieldPaths:
+          - spec.template.spec.containers.[name=manager].image
+  - source:
+      kind: ConfigMap
+      version: v1
+      name: toolhive-operator-parameters
+      fieldPath: data.toolhive-proxy-image
+    targets:
+      - select:
+          kind: Deployment
+          name: controller-manager
+        fieldPaths:
+          - spec.template.spec.containers.[name=manager].env.[name=TOOLHIVE_RUNNER_IMAGE].value

@@ -14,12 +14,6 @@ namePrefix: toolhive-operator-
 #  pairs:
 #    someName: someValue
 
-# Images to use for the resources
-images:
-- name: controller # Name of the image as used in the manifests
-  newName: ghcr.io/stacklok/toolhive/operator # New image name
-  newTag: v0.2.17 # New image tag
-
 # Replicas configuration
 replicas:
 - name: controller-manager # Name of the Deployment

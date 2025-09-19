@@ -11,5 +11,5 @@ TBD
 Build `kustomize` manifests:
 
 ```shell
-kustomize build config/default
+kustomize build config/base
 ```

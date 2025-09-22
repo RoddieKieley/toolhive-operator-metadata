@@ -9,10 +9,11 @@ namespace: toolhive-operator-system
 namePrefix: toolhive-operator-
 
 # Labels to add to all resources and selectors.
-#labels:
-#- includeSelectors: true
-#  pairs:
-#    someName: someValue
+labels:
+- includeSelectors: false
+  includeTemplates: false
+  pairs:
+    app.kubernetes.io/part-of: toolhive-operator
 
 # Replicas configuration
 replicas:

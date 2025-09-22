@@ -2,3 +2,7 @@
 - op: add
   path: /spec/template/spec/containers/0/args/0
   value: --metrics-bind-address=:8443
+
+- op: replace
+  path: /spec/template/spec/containers/0/ports/0/containerPort
+  value: 8443

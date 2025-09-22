@@ -35,3 +35,11 @@ replacements:
           name: controller-manager
         fieldPaths:
           - spec.template.spec.containers.[name=manager].env.[name=TOOLHIVE_RUNNER_IMAGE].value
+
+patches:
+  - path: openshift_sec_patches.yaml
+    target:
+      kind: Deployment
+      name: controller-manager
+  - path: openshift_res_utilization.yaml
+  - path: remove-namespace.yaml

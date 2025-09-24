@@ -41,5 +41,9 @@ patches:
     target:
       kind: Deployment
       name: controller-manager
+  - path: openshift_env_var_patch.yaml
+    target:
+      kind: Deployment
+      name: controller-manager
   - path: openshift_res_utilization.yaml
   - path: remove-namespace.yaml

@@ -1,0 +1,38 @@
+# Bundle metadata annotations
+# Location: bundle/metadata/annotations.yaml
+#
+# These annotations provide metadata about the bundle format and content.
+# They are used by OLM to understand how to process the bundle.
+
+annotations:
+  # Specifies the bundle media type (registry+v1 is the standard format)
+  operators.operatorframework.io.bundle.mediatype.v1: registry+v1
+
+  # Specifies where manifests are located within the bundle
+  operators.operatorframework.io.bundle.manifests.v1: manifests/
+
+  # Specifies where metadata is located within the bundle
+  operators.operatorframework.io.bundle.metadata.v1: metadata/
+
+  # Package name this bundle belongs to
+  operators.operatorframework.io.bundle.package.v1: toolhive-operator
+
+  # Comma-separated list of channels this bundle is part of
+  operators.operatorframework.io.bundle.channels.v1: stable
+
+  # Default channel for this bundle
+  operators.operatorframework.io.bundle.channel.default.v1: stable
+
+  # Additional optional annotations for enhanced metadata
+
+  # Minimum Kubernetes version supported
+  # Note: This should match spec.minKubeVersion in the CSV
+  com.redhat.openshift.versions: "v4.10-v4.15"
+
+  # Container images used by this operator
+  # Format: JSON array of image references
+  operators.operatorframework.io.bundle.image.v1: |
+    [
+      "ghcr.io/stacklok/toolhive/operator:v0.2.17",
+      "ghcr.io/stacklok/toolhive/proxyrunner:v0.2.17"
+    ]

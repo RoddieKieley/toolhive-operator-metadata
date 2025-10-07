@@ -1,0 +1,33 @@
+# Containerfile for building OLMv1 File-Based Catalog image
+#
+# This Containerfile creates a minimal catalog image containing FBC metadata.
+# OLM uses the label to locate the catalog configuration within the image.
+#
+# Build command:
+#   podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.2.17 .
+#
+# Validation command (after build):
+#   opm validate <image-reference>
+
+# Use scratch base image for minimal size
+# The catalog image only needs to contain static YAML files
+FROM scratch
+
+# Add the entire catalog directory to /configs in the image
+# This directory contains all FBC schema files (olm.package, olm.channel, olm.bundle)
+ADD catalog /configs
+
+# Required label for OLM to locate the catalog metadata
+# This tells OLM where to find the FBC schemas within the image
+LABEL operators.operatorframework.io.index.configs.v1=/configs
+
+# Optional metadata labels for better image documentation
+LABEL org.opencontainers.image.title="Toolhive Operator Catalog"
+LABEL org.opencontainers.image.description="File-Based Catalog for Toolhive Operator (OLMv1)"
+LABEL org.opencontainers.image.vendor="Stacklok"
+LABEL org.opencontainers.image.source="https://github.com/RHEcosystemAppEng/toolhive-operator-metadata"
+LABEL org.opencontainers.image.version="v0.2.17"
+LABEL org.opencontainers.image.licenses="Apache-2.0"
+
+# No ENTRYPOINT or CMD needed - this is a data-only image
+# OLM reads the catalog directly from the image filesystem

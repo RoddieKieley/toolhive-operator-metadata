@@ -27,7 +27,7 @@ annotations:
 
   # Minimum Kubernetes version supported
   # Note: This should match spec.minKubeVersion in the CSV
-  com.redhat.openshift.versions: "v4.10-v4.15"
+  com.redhat.openshift.versions: "v4.10-v4.19"
 
   # Container images used by this operator
   # Format: JSON array of image references

@@ -27,8 +27,8 @@ opm validate catalog/
 
 ### Verification
 The catalog directory contains all three required FBC schemas:
-- `olm.package` - Defines toolhive-operator package with stable default channel
-- `olm.channel` - Defines stable channel with v0.2.17 entry
+- `olm.package` - Defines toolhive-operator package with fast default channel
+- `olm.channel` - Defines fast channel with v0.2.17 entry
 - `olm.bundle` - Defines v0.2.17 bundle with correct properties and GVK references
 
 ## Bundle Structure Validation
@@ -78,12 +78,12 @@ operators.operatorframework.io.bundle.mediatype.v1: registry+v1
 operators.operatorframework.io.bundle.manifests.v1: manifests/
 operators.operatorframework.io.bundle.metadata.v1: metadata/
 operators.operatorframework.io.bundle.package.v1: toolhive-operator
-operators.operatorframework.io.bundle.channels.v1: stable
-operators.operatorframework.io.bundle.channel.default.v1: stable
+operators.operatorframework.io.bundle.channels.v1: fast
+operators.operatorframework.io.bundle.channel.default.v1: fast
 ```
 
 **Additional Annotations** ✅
-- OpenShift version compatibility: v4.10-v4.15
+- OpenShift version compatibility: v4.10-v4.19
 - Container image references for both operator and proxyrunner
 - Builder metadata
 

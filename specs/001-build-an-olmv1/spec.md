@@ -85,6 +85,23 @@ Platform engineers need to define multiple release channels (e.g., stable, candi
 
 ---
 
+### User Story 5 - Registry-Server Compatibility (Priority: P3)
+
+Platform engineers need to ensure the catalog container image is properly consumable by OpenShift's registry-server to host the catalog content and make it available to cluster users for operator installation.
+
+**Why this priority**: While the catalog image builds successfully, it must be verified to work with OpenShift's internal registry infrastructure. This is critical for production deployment but can be validated after initial catalog creation.
+
+**Independent Test**: Can be fully tested by deploying the catalog image to an OpenShift cluster with registry-server, creating a CatalogSource pointing to the image, and verifying the operator package is discoverable and installable.
+
+**Acceptance Scenarios**:
+
+1. **Given** a built catalog container image, **When** pushed to an OpenShift-accessible registry, **Then** the registry-server can pull and serve the catalog metadata
+2. **Given** the catalog image is served by registry-server, **When** a CatalogSource resource references the image, **Then** OLM discovers the toolhive-operator package
+3. **Given** the package is discoverable, **When** a platform engineer creates a Subscription, **Then** the operator installs successfully from the catalog
+4. **Given** the catalog is hosted by registry-server, **When** querying available operators, **Then** the toolhive-operator appears with correct version and channel information
+
+---
+
 ### Edge Cases
 
 - What happens when the bundle image reference is invalid or inaccessible?
@@ -110,6 +127,7 @@ Platform engineers need to define multiple release channels (e.g., stable, candi
 - **FR-010**: Bundle images referenced in olm.bundle schemas MUST point to valid, accessible container image locations
 - **FR-011**: The catalog MUST define unique combinations of schema, package, and name for each entry
 - **FR-012**: The package metadata MUST reference the existing CRDs (MCPRegistry, MCPServer) defined in config/crd/
+- **FR-013**: The catalog container image MUST be compatible with OpenShift registry-server for hosting and serving catalog content to cluster users
 
 ### Key Entities
 
@@ -128,6 +146,7 @@ Platform engineers need to define multiple release channels (e.g., stable, candi
 - **SC-004**: The built catalog image contains all required schemas (olm.package, olm.channel, olm.bundle) and can be deployed to OLMv1 clusters
 - **SC-005**: The bundle passes operator-sdk scorecard tests with a passing score
 - **SC-006**: The catalog metadata includes version information for at least the current operator version (v0.2.17)
+- **SC-007**: The catalog image successfully deploys to OpenShift registry-server and makes the operator package discoverable via CatalogSource
 
 ## Assumptions
 

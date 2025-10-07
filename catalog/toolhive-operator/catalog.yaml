@@ -2,7 +2,7 @@
 # Package Schema - defines the toolhive-operator package
 schema: olm.package
 name: toolhive-operator
-defaultChannel: stable
+defaultChannel: fast
 description: |
   Toolhive Operator manages Model Context Protocol (MCP) servers and registries.
 
@@ -16,9 +16,9 @@ icon:
   mediatype: image/svg+xml
 
 ---
-# Channel Schema - defines the stable release channel
+# Channel Schema - defines the fast release channel
 schema: olm.channel
-name: stable
+name: fast
 package: toolhive-operator
 entries:
   - name: toolhive-operator.v0.2.17

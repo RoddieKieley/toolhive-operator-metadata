@@ -23,7 +23,7 @@ metadata:
   name: toolhive-operator
   namespace: toolhive-system
 spec:
-  channel: stable
+  channel: fast
   name: toolhive-operator
   source: toolhive-catalog
   sourceNamespace: olm

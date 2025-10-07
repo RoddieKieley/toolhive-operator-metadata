@@ -27,9 +27,9 @@ description: "Implementation tasks for OLMv1 File-Based Catalog Bundle"
 
 **Purpose**: Project initialization and directory structure
 
-- [ ] T001 Create bundle directory structure: `bundle/manifests/` and `bundle/metadata/`
-- [ ] T002 [P] Create catalog directory structure: `catalog/toolhive-operator/`
-- [ ] T003 [P] Verify kustomize builds pass (constitution I): `kustomize build config/default` and `kustomize build config/base`
+- [x] T001 Create bundle directory structure: `bundle/manifests/` and `bundle/metadata/`
+- [x] T002 [P] Create catalog directory structure: `catalog/toolhive-operator/`
+- [x] T003 [P] Verify kustomize builds pass (constitution I): `kustomize build config/default` and `kustomize build config/base`
 
 **Checkpoint**: Directory structure ready for bundle and catalog generation
 
@@ -41,14 +41,14 @@ description: "Implementation tasks for OLMv1 File-Based Catalog Bundle"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Copy MCPRegistry CRD from config/crd/bases/toolhive.stacklok.dev_mcpregistries.yaml to bundle/manifests/mcpregistries.crd.yaml (constitution III - immutability)
-- [ ] T005 [P] Copy MCPServer CRD from config/crd/bases/toolhive.stacklok.dev_mcpservers.yaml to bundle/manifests/mcpservers.crd.yaml (constitution III - immutability)
-- [ ] T006 Create ClusterServiceVersion (CSV) manifest in bundle/manifests/toolhive-operator.clusterserviceversion.yaml with required metadata (displayName, description, version: 0.2.17, minKubeVersion: 1.16.0)
-- [ ] T007 Add deployment specification to CSV from config/manager/manager.yaml (operator image: ghcr.io/stacklok/toolhive/operator:v0.2.17, proxyrunner image: ghcr.io/stacklok/toolhive/proxyrunner:v0.2.17)
-- [ ] T008 Add RBAC permissions to CSV from config/rbac/role.yaml
-- [ ] T009 Add owned CRD definitions to CSV spec.customresourcedefinitions.owned (MCPRegistry v1alpha1, MCPServer v1alpha1)
-- [ ] T010 Add recommended metadata to CSV: icon (base64), keywords (mcp, model-context-protocol, ai, toolhive), maintainers (Stacklok), provider, links
-- [ ] T011 Create bundle metadata annotations in bundle/metadata/annotations.yaml with required OLM annotations (mediatype, manifests path, metadata path, package, channels, default channel)
+- [x] T004 Copy MCPRegistry CRD from config/crd/bases/toolhive.stacklok.dev_mcpregistries.yaml to bundle/manifests/mcpregistries.crd.yaml (constitution III - immutability)
+- [x] T005 [P] Copy MCPServer CRD from config/crd/bases/toolhive.stacklok.dev_mcpservers.yaml to bundle/manifests/mcpservers.crd.yaml (constitution III - immutability)
+- [x] T006 Create ClusterServiceVersion (CSV) manifest in bundle/manifests/toolhive-operator.clusterserviceversion.yaml with required metadata (displayName, description, version: 0.2.17, minKubeVersion: 1.16.0)
+- [x] T007 Add deployment specification to CSV from config/manager/manager.yaml (operator image: ghcr.io/stacklok/toolhive/operator:v0.2.17, proxyrunner image: ghcr.io/stacklok/toolhive/proxyrunner:v0.2.17)
+- [x] T008 Add RBAC permissions to CSV from config/rbac/role.yaml
+- [x] T009 Add owned CRD definitions to CSV spec.customresourcedefinitions.owned (MCPRegistry v1alpha1, MCPServer v1alpha1)
+- [x] T010 Add recommended metadata to CSV: icon (base64), keywords (mcp, model-context-protocol, ai, toolhive), maintainers (Stacklok), provider, links
+- [x] T011 Create bundle metadata annotations in bundle/metadata/annotations.yaml with required OLM annotations (mediatype, manifests path, metadata path, package, channels, default channel)
 
 **Checkpoint**: Foundation ready - bundle directory is complete with all manifests
 
@@ -62,22 +62,22 @@ description: "Implementation tasks for OLMv1 File-Based Catalog Bundle"
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Create olm.package schema in catalog/toolhive-operator/catalog.yaml defining package name "toolhive-operator", defaultChannel "stable", description, and icon
-- [ ] T013 [US1] Create olm.channel schema in catalog/toolhive-operator/catalog.yaml defining channel name "stable", package reference, and entries list with toolhive-operator.v0.2.17
-- [ ] T014 [US1] Render bundle to FBC format: run `opm render bundle/ --output yaml` and capture olm.bundle schema
-- [ ] T015 [US1] Extract olm.bundle schema and append to catalog/toolhive-operator/catalog.yaml with bundle name "toolhive-operator.v0.2.17", package reference, image "ghcr.io/stacklok/toolhive/bundle:v0.2.17"
-- [ ] T016 [US1] Add required properties to olm.bundle: olm.package property (packageName: toolhive-operator, version: 0.2.17)
-- [ ] T017 [US1] Add olm.gvk properties to olm.bundle for MCPRegistry (group: toolhive.stacklok.dev, kind: MCPRegistry, version: v1alpha1)
-- [ ] T018 [US1] Add olm.gvk properties to olm.bundle for MCPServer (group: toolhive.stacklok.dev, kind: MCPServer, version: v1alpha1)
+- [x] T012 [US1] Create olm.package schema in catalog/toolhive-operator/catalog.yaml defining package name "toolhive-operator", defaultChannel "stable", description, and icon
+- [x] T013 [US1] Create olm.channel schema in catalog/toolhive-operator/catalog.yaml defining channel name "stable", package reference, and entries list with toolhive-operator.v0.2.17
+- [x] T014 [US1] Render bundle to FBC format: run `opm render bundle/ --output yaml` and capture olm.bundle schema
+- [x] T015 [US1] Extract olm.bundle schema and append to catalog/toolhive-operator/catalog.yaml with bundle name "toolhive-operator.v0.2.17", package reference, image "ghcr.io/stacklok/toolhive/bundle:v0.2.17"
+- [x] T016 [US1] Add required properties to olm.bundle: olm.package property (packageName: toolhive-operator, version: 0.2.17)
+- [x] T017 [US1] Add olm.gvk properties to olm.bundle for MCPRegistry (group: toolhive.stacklok.dev, kind: MCPRegistry, version: v1alpha1)
+- [x] T018 [US1] Add olm.gvk properties to olm.bundle for MCPServer (group: toolhive.stacklok.dev, kind: MCPServer, version: v1alpha1)
 
 ### Validation for User Story 1
 
-- [ ] T019 [US1] Run `opm validate catalog/` to verify FBC schema correctness - must pass with no errors
-- [ ] T020 [US1] Verify olm.package schema has all required fields (schema, name, defaultChannel)
-- [ ] T021 [US1] Verify olm.channel schema has all required fields (schema, name, package, entries) and references valid package
-- [ ] T022 [US1] Verify olm.bundle schema has all required fields (schema, name, package, image, properties) and correct bundle name format
-- [ ] T023 [US1] Verify referential integrity: channel.package → package.name, bundle.package → package.name, package.defaultChannel → channel.name
-- [ ] T024 [US1] Verify constitution compliance: run `kustomize build config/default` and `kustomize build config/base` - both must still pass (constitution I)
+- [x] T019 [US1] Run `opm validate catalog/` to verify FBC schema correctness - must pass with no errors
+- [x] T020 [US1] Verify olm.package schema has all required fields (schema, name, defaultChannel)
+- [x] T021 [US1] Verify olm.channel schema has all required fields (schema, name, package, entries) and references valid package
+- [x] T022 [US1] Verify olm.bundle schema has all required fields (schema, name, package, image, properties) and correct bundle name format
+- [x] T023 [US1] Verify referential integrity: channel.package → package.name, bundle.package → package.name, package.defaultChannel → channel.name
+- [x] T024 [US1] Verify constitution compliance: run `kustomize build config/default` and `kustomize build config/base` - both must still pass (constitution I)
 
 **Checkpoint**: User Story 1 complete - catalog metadata is valid and ready for image building
 
@@ -91,18 +91,18 @@ description: "Implementation tasks for OLMv1 File-Based Catalog Bundle"
 
 ### Implementation for User Story 2
 
-- [ ] T025 [US2] Create Containerfile.catalog at repository root with FROM scratch, ADD catalog /configs, and required OLM label (operators.operatorframework.io.index.configs.v1=/configs)
-- [ ] T026 [US2] Add optional metadata labels to Containerfile.catalog (title, description, vendor, source, version, licenses)
-- [ ] T027 [US2] Build catalog container image: run `podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.2.17 .`
-- [ ] T028 [US2] Tag catalog image as latest: `podman tag ghcr.io/stacklok/toolhive/catalog:v0.2.17 ghcr.io/stacklok/toolhive/catalog:latest`
+- [x] T025 [US2] Create Containerfile.catalog at repository root with FROM scratch, ADD catalog /configs, and required OLM label (operators.operatorframework.io.index.configs.v1=/configs)
+- [x] T026 [US2] Add optional metadata labels to Containerfile.catalog (title, description, vendor, source, version, licenses)
+- [x] T027 [US2] Build catalog container image: run `podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.2.17 .`
+- [x] T028 [US2] Tag catalog image as latest: `podman tag ghcr.io/stacklok/toolhive/catalog:v0.2.17 ghcr.io/stacklok/toolhive/catalog:latest`
 
 ### Validation for User Story 2
 
-- [ ] T029 [US2] Validate catalog image with opm: run `opm validate ghcr.io/stacklok/toolhive/catalog:v0.2.17` - must pass with no errors
-- [ ] T030 [US2] Test catalog serving locally: run `opm serve ghcr.io/stacklok/toolhive/catalog:v0.2.17 -p 50051` and verify it starts without errors
-- [ ] T031 [US2] Query local catalog with grpcurl: run `grpcurl -plaintext localhost:50051 api.Registry/ListPackages` and verify "toolhive-operator" package is returned
-- [ ] T032 [US2] Inspect image layers: verify catalog directory exists at /configs with all FBC schemas intact
-- [ ] T033 [US2] Verify image size is minimal (scratch-based image should be < 10MB)
+- [x] T029 [US2] Validate catalog image with opm: run `opm validate ghcr.io/stacklok/toolhive/catalog:v0.2.17` - must pass with no errors
+- [x] T030 [US2] Test catalog serving locally: run `opm serve ghcr.io/stacklok/toolhive/catalog:v0.2.17 -p 50051` and verify it starts without errors
+- [x] T031 [US2] Query local catalog with grpcurl: run `grpcurl -plaintext localhost:50051 api.Registry/ListPackages` and verify "toolhive-operator" package is returned
+- [x] T032 [US2] Inspect image layers: verify catalog directory exists at /configs with all FBC schemas intact
+- [x] T033 [US2] Verify image size is minimal (scratch-based image should be < 10MB)
 
 **Checkpoint**: User Story 2 complete - catalog image is built, validated, and ready for distribution
 
@@ -116,19 +116,19 @@ description: "Implementation tasks for OLMv1 File-Based Catalog Bundle"
 
 ### Implementation for User Story 3
 
-- [ ] T034 [US3] Run basic bundle validation: `operator-sdk bundle validate ./bundle`
-- [ ] T035 [US3] Run Operator Framework suite validation: `operator-sdk bundle validate ./bundle --select-optional suite=operatorframework`
-- [ ] T036 [US3] Run bundle validation with Kubernetes version check: `operator-sdk bundle validate ./bundle --select-optional suite=operatorframework --optional-values=k8s-version=1.16`
-- [ ] T037 [US3] Run operator-sdk scorecard tests: `operator-sdk scorecard ./bundle` (if bundle image is built and accessible)
+- [x] T034 [US3] Run basic bundle validation: `operator-sdk bundle validate ./bundle`
+- [x] T035 [US3] Run Operator Framework suite validation: `operator-sdk bundle validate ./bundle --select-optional suite=operatorframework`
+- [x] T036 [US3] Run bundle validation with Kubernetes version check: `operator-sdk bundle validate ./bundle --select-optional suite=operatorframework --optional-values=k8s-version=1.16`
+- [x] T037 [US3] Run operator-sdk scorecard tests: `operator-sdk scorecard ./bundle` (if bundle image is built and accessible)
 
 ### Validation Results Review for User Story 3
 
-- [ ] T038 [US3] Review validation output and ensure zero errors for basic validation
-- [ ] T039 [US3] Review validation output and ensure zero errors for operatorframework suite
-- [ ] T040 [US3] Review scorecard results and ensure passing score (if scorecard was run)
-- [ ] T041 [US3] Verify CSV has all required fields (displayName, description, version, minKubeVersion, install.spec.deployments, install.spec.permissions, customresourcedefinitions.owned)
-- [ ] T042 [US3] Verify bundle metadata/annotations.yaml has all required OLM annotations
-- [ ] T043 [US3] Verify semantic versioning format is correct (0.2.17, not v0.2.17) throughout bundle and catalog
+- [x] T038 [US3] Review validation output and ensure zero errors for basic validation
+- [x] T039 [US3] Review validation output and ensure zero errors for operatorframework suite
+- [x] T040 [US3] Review scorecard results and ensure passing score (if scorecard was run)
+- [x] T041 [US3] Verify CSV has all required fields (displayName, description, version, minKubeVersion, install.spec.deployments, install.spec.permissions, customresourcedefinitions.owned)
+- [x] T042 [US3] Verify bundle metadata/annotations.yaml has all required OLM annotations
+- [x] T043 [US3] Verify semantic versioning format is correct (0.2.17, not v0.2.17) throughout bundle and catalog
 
 **Checkpoint**: User Story 3 complete - bundle and catalog pass all Operator Framework validations
 
@@ -166,19 +166,19 @@ description: "Implementation tasks for OLMv1 File-Based Catalog Bundle"
 
 **Purpose**: Improvements that affect multiple user stories and production readiness
 
-- [ ] T056 [P] Create Makefile targets for bundle generation (make bundle, make bundle-validate)
-- [ ] T057 [P] Create Makefile targets for catalog generation (make catalog, make catalog-validate, make catalog-build, make catalog-push)
-- [ ] T058 [P] Create Makefile target for complete OLM workflow (make olm-all: bundle → validate → catalog → build)
-- [ ] T059 [P] Add .indexignore file to catalog/toolhive-operator/ if needed (to exclude specific files from catalog build)
-- [ ] T060 Document bundle and catalog build process in repository README.md with quickstart commands
-- [ ] T061 [P] Add CI/CD integration for automated bundle validation (if CI system exists)
-- [ ] T062 [P] Add CI/CD integration for automated catalog validation (if CI system exists)
-- [ ] T063 Create example CatalogSource manifest for deploying catalog to Kubernetes/OpenShift clusters
-- [ ] T064 Create example Subscription manifest for installing operator from catalog
-- [ ] T065 Final constitution compliance check: verify `kustomize build config/default` and `kustomize build config/base` still pass
-- [ ] T066 Final constitution compliance check: verify CRD files in config/crd/ are unchanged (git diff --exit-code config/crd/)
-- [ ] T067 Verify quickstart.md accuracy by following all steps manually
-- [ ] T068 Commit all changes with message referencing feature spec and constitution compliance
+- [x] T056 [P] Create Makefile targets for bundle generation (make bundle, make bundle-validate)
+- [x] T057 [P] Create Makefile targets for catalog generation (make catalog, make catalog-validate, make catalog-build, make catalog-push)
+- [x] T058 [P] Create Makefile target for complete OLM workflow (make olm-all: bundle → validate → catalog → build)
+- [x] T059 [P] Add .indexignore file to catalog/toolhive-operator/ if needed (to exclude specific files from catalog build)
+- [x] T060 Document bundle and catalog build process in repository README.md with quickstart commands
+- [x] T061 [P] Add CI/CD integration for automated bundle validation (if CI system exists)
+- [x] T062 [P] Add CI/CD integration for automated catalog validation (if CI system exists)
+- [x] T063 Create example CatalogSource manifest for deploying catalog to Kubernetes/OpenShift clusters
+- [x] T064 Create example Subscription manifest for installing operator from catalog
+- [x] T065 Final constitution compliance check: verify `kustomize build config/default` and `kustomize build config/base` still pass
+- [x] T066 Final constitution compliance check: verify CRD files in config/crd/ are unchanged (git diff --exit-code config/crd/)
+- [x] T067 Verify quickstart.md accuracy by following all steps manually
+- [x] T068 Commit all changes with message referencing feature spec and constitution compliance
 
 ---
 

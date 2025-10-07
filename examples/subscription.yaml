@@ -1,0 +1,30 @@
+---
+# Subscription for Toolhive Operator
+#
+# This resource installs the Toolhive Operator from the catalog.
+# OLM will automatically deploy the operator and keep it updated.
+#
+# Prerequisites:
+#   1. CatalogSource must be deployed (see catalogsource.yaml)
+#   2. Target namespace must exist (or use an existing namespace)
+#
+# Usage:
+#   kubectl create namespace toolhive-system  # or use existing namespace
+#   kubectl apply -f examples/subscription.yaml
+#
+# Verify:
+#   kubectl get subscription -n toolhive-system toolhive-operator
+#   kubectl get csv -n toolhive-system
+#   kubectl get pods -n toolhive-system
+
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: toolhive-operator
+  namespace: toolhive-system
+spec:
+  channel: stable
+  name: toolhive-operator
+  source: toolhive-catalog
+  sourceNamespace: olm
+  installPlanApproval: Automatic

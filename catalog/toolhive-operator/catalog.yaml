@@ -1,0 +1,52 @@
+---
+# Package Schema - defines the toolhive-operator package
+schema: olm.package
+name: toolhive-operator
+defaultChannel: stable
+description: |
+  Toolhive Operator manages Model Context Protocol (MCP) servers and registries.
+
+  The operator provides custom resources for:
+  - MCPRegistry: Manages registries of MCP server definitions
+  - MCPServer: Manages individual MCP server instances
+
+  MCP enables AI assistants to securely access external tools and data sources.
+icon:
+  base64data: PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzAwN2ZmZiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI1NiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPk08L3RleHQ+Cjwvc3ZnPg==
+  mediatype: image/svg+xml
+
+---
+# Channel Schema - defines the stable release channel
+schema: olm.channel
+name: stable
+package: toolhive-operator
+entries:
+  - name: toolhive-operator.v0.2.17
+    # Initial release - no replaces/skips
+
+---
+# Bundle Schema - defines the v0.2.17 bundle
+schema: olm.bundle
+name: toolhive-operator.v0.2.17
+package: toolhive-operator
+image: ghcr.io/stacklok/toolhive/bundle:v0.2.17
+properties:
+  # Package version property
+  - type: olm.package
+    value:
+      packageName: toolhive-operator
+      version: 0.2.17
+
+  # MCPRegistry CRD
+  - type: olm.gvk
+    value:
+      group: toolhive.stacklok.dev
+      kind: MCPRegistry
+      version: v1alpha1
+
+  # MCPServer CRD
+  - type: olm.gvk
+    value:
+      group: toolhive.stacklok.dev
+      kind: MCPServer
+      version: v1alpha1

@@ -5,6 +5,20 @@
 **Status**: Draft
 **Input**: User description: "Build an OLMv1 bundle for the toolhive-operator. The OLMv1 in this case refers to the Operator Lifecycle Manager v1. Add the required data and files for manifests to add the ability to build a File Based Catalog (FBC) bundle for the Operator Lifecycle Manager v1 as per the documentation at https://olm.operatorframework.io/docs/reference/file-based-catalogs. The bundle metadata should be buildable into a container image using the opm tool. This bundle MUST validate successfully using the operator-sdk tool as per https://olm.operatorframework.io/docs/best-practices/common."
 
+## Glossary
+
+**Key Terms**:
+
+- **FBC (File-Based Catalog)**: OLMv1's declarative catalog format using YAML/JSON schemas to define operator packages, channels, and bundles
+- **Bundle**: A collection of Kubernetes manifests (CSV, CRDs, RBAC) representing a specific operator version
+- **Bundle Image**: Container image containing operator manifests (CSV, CRDs, RBAC) for a specific version - referenced by `olm.bundle` schemas
+- **Catalog Image**: Container image containing FBC metadata schemas (olm.package, olm.channel, olm.bundle) - built from the `catalog/` directory
+- **CSV (ClusterServiceVersion)**: Kubernetes manifest describing operator metadata, capabilities, RBAC, and deployment specifications
+- **Channel**: Release track (e.g., stable, candidate) defining available operator versions and upgrade paths
+- **OLM (Operator Lifecycle Manager)**: Kubernetes extension for managing operator installation, updates, and lifecycle
+- **opm**: Operator Package Manager - CLI tool for building and validating FBC catalogs
+- **operator-sdk**: CLI tool for validating operator bundles and running quality tests
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Bundle Metadata Creation (Priority: P1)
@@ -110,7 +124,7 @@ Platform engineers need to define multiple release channels (e.g., stable, candi
 
 - **SC-001**: The catalog metadata validates successfully with zero errors when running `opm validate`
 - **SC-002**: The bundle validates successfully with zero errors when running `operator-sdk bundle validate --select-optional suite=operatorframework`
-- **SC-003**: Platform engineers can build a catalog container image from the metadata files in under 2 minutes using standard opm commands
+- **SC-003**: Platform engineers can build a catalog container image from the metadata files in under 120 seconds using standard opm commands (measured from `podman build` command start to successful completion)
 - **SC-004**: The built catalog image contains all required schemas (olm.package, olm.channel, olm.bundle) and can be deployed to OLMv1 clusters
 - **SC-005**: The bundle passes operator-sdk scorecard tests with a passing score
 - **SC-006**: The catalog metadata includes version information for at least the current operator version (v0.2.17)

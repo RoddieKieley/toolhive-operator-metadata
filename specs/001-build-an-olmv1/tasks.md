@@ -98,7 +98,7 @@ description: "Implementation tasks for OLMv1 File-Based Catalog Bundle"
 
 ### Validation for User Story 2
 
-- [x] T029 [US2] Validate catalog image with opm: run `opm validate ghcr.io/stacklok/toolhive/catalog:v0.2.17` - must pass with no errors
+- [x] T029 [US2] Validate catalog image with opm: run `opm validate catalog/` from project root - must pass with no errors
 - [x] T030 [US2] Test catalog serving locally: run `opm serve ghcr.io/stacklok/toolhive/catalog:v0.2.17 -p 50051` and verify it starts without errors
 - [x] T031 [US2] Query local catalog with grpcurl: run `grpcurl -plaintext localhost:50051 api.Registry/ListPackages` and verify "toolhive-operator" package is returned
 - [x] T032 [US2] Inspect image layers: verify catalog directory exists at /configs with all FBC schemas intact

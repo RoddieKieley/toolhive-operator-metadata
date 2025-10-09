@@ -1,0 +1,89 @@
+# OLM Bundle Container Image Label Specification
+#
+# This contract defines the required and optional labels for the Toolhive Operator
+# bundle container image. These labels enable OLM to discover and process the bundle.
+#
+# Labels MUST match the annotations in bundle/metadata/annotations.yaml
+
+---
+# Required OLM Labels (MUST be present)
+required_labels:
+  # Bundle format version - MUST be "registry+v1" for OLMv0 compatibility
+  operators.operatorframework.io.bundle.mediatype.v1: "registry+v1"
+
+  # Path to manifests directory in the image - MUST be "manifests/"
+  operators.operatorframework.io.bundle.manifests.v1: "manifests/"
+
+  # Path to metadata directory in the image - MUST be "metadata/"
+  operators.operatorframework.io.bundle.metadata.v1: "metadata/"
+
+  # Package name - MUST match the operator package identifier
+  operators.operatorframework.io.bundle.package.v1: "toolhive-operator"
+
+  # Comma-separated list of channels - MUST include at least the default channel
+  operators.operatorframework.io.bundle.channels.v1: "fast"
+
+  # Default channel name - MUST be one of the channels listed above
+  operators.operatorframework.io.bundle.channel.default.v1: "fast"
+
+---
+# Optional OCI Image Labels (SHOULD be present for registry discoverability)
+optional_oci_labels:
+  # Human-readable image title
+  org.opencontainers.image.title: "Toolhive Operator Bundle"
+
+  # Image description
+  org.opencontainers.image.description: "OLMv0 Bundle for Toolhive Operator (manages MCP servers and registries)"
+
+  # Vendor/organization name
+  org.opencontainers.image.vendor: "Stacklok"
+
+  # Source repository URL
+  org.opencontainers.image.source: "https://github.com/RHEcosystemAppEng/toolhive-operator-metadata"
+
+  # Semantic version (SHOULD match CSV spec.version)
+  org.opencontainers.image.version: "v0.2.17"
+
+  # License identifier (SPDX format)
+  org.opencontainers.image.licenses: "Apache-2.0"
+
+---
+# Platform-Specific Labels (SHOULD be present for OpenShift deployments)
+platform_labels:
+  # OpenShift version range support
+  com.redhat.openshift.versions: "v4.10-v4.19"
+
+---
+# Label Validation Rules
+validation_rules:
+  - name: "Label-Annotation Consistency"
+    description: "All required labels MUST match corresponding annotations in bundle/metadata/annotations.yaml"
+    severity: "error"
+    check: "Compare label values with annotation values"
+
+  - name: "Channel Consistency"
+    description: "Default channel MUST be included in channels list"
+    severity: "error"
+    check: "Verify bundle.channel.default.v1 value exists in bundle.channels.v1 comma-separated list"
+
+  - name: "Version Consistency"
+    description: "org.opencontainers.image.version SHOULD match CSV spec.version"
+    severity: "warning"
+    check: "Compare image label version with bundle/manifests/*.clusterserviceversion.yaml spec.version"
+
+  - name: "Path Validity"
+    description: "Manifest and metadata paths MUST reference existing directories in the image"
+    severity: "error"
+    check: "Verify /manifests/ and /metadata/ directories exist in built image"
+
+---
+# Usage Examples
+
+# Inspect labels on built image:
+# podman inspect ghcr.io/stacklok/toolhive/bundle:v0.2.17 --format '{{json .Labels}}' | jq
+
+# Verify required labels are present:
+# podman inspect ghcr.io/stacklok/toolhive/bundle:v0.2.17 \
+#   --format '{{index .Labels "operators.operatorframework.io.bundle.mediatype.v1"}}'
+
+# Expected output: "registry+v1"

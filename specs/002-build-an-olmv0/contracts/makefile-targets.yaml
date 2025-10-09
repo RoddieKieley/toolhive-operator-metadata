@@ -1,0 +1,222 @@
+# Makefile Targets Contract
+#
+# This contract defines the new Makefile targets for building, validating, and
+# pushing OLMv0 bundle container images.
+
+---
+# New Makefile Section
+section_header: "##@ OLM Bundle Image Targets"
+section_description: "Targets for building and managing OLMv0 bundle container images"
+insertion_point: "After '##@ OLM Catalog Targets' section (approximately line 85)"
+
+---
+# Target Specifications
+
+targets:
+  - name: "bundle-validate-sdk"
+    type: "phony"
+    dependencies: []
+    description: "Validate OLM bundle with operator-sdk"
+    commands:
+      - '@echo "Validating bundle with operator-sdk..."'
+      - "operator-sdk bundle validate ./bundle --select-optional suite=operatorframework"
+      - '@echo "✅ Bundle validation passed"'
+    error_handling: "Fail immediately on non-zero exit code"
+    output_on_success: "✅ Bundle validation passed"
+    output_on_failure: "operator-sdk error messages (stderr)"
+
+  - name: "bundle-build"
+    type: "phony"
+    dependencies: ["bundle-validate-sdk"]
+    description: "Build bundle container image"
+    commands:
+      - '@echo "Building bundle container image..."'
+      - "podman build -f Containerfile.bundle -t ghcr.io/stacklok/toolhive/bundle:v0.2.17 ."
+      - "podman tag ghcr.io/stacklok/toolhive/bundle:v0.2.17 ghcr.io/stacklok/toolhive/bundle:latest"
+      - '@echo "✅ Bundle image built: ghcr.io/stacklok/toolhive/bundle:v0.2.17"'
+      - "@podman images ghcr.io/stacklok/toolhive/bundle"
+    error_handling: "Fail immediately if validation or build fails"
+    output_on_success: "Image list showing built bundle images"
+    prerequisites:
+      - "bundle-validate-sdk must pass"
+      - "Containerfile.bundle must exist"
+      - "bundle/ directory must exist"
+
+  - name: "bundle-push"
+    type: "phony"
+    dependencies: []
+    description: "Push bundle image to registry"
+    commands:
+      - '@echo "Pushing bundle image to ghcr.io..."'
+      - "podman push ghcr.io/stacklok/toolhive/bundle:v0.2.17"
+      - "podman push ghcr.io/stacklok/toolhive/bundle:latest"
+      - '@echo "✅ Bundle image pushed"'
+    error_handling: "Fail immediately if push fails"
+    output_on_success: "✅ Bundle image pushed"
+    prerequisites:
+      - "Bundle image must be built locally (bundle-build)"
+      - "Registry authentication must be configured (podman login)"
+    notes: "User should manually run 'podman login ghcr.io' before using this target"
+
+  - name: "bundle-all"
+    type: "phony"
+    dependencies: ["bundle-validate-sdk", "bundle-build"]
+    description: "Run complete bundle workflow (validate, build)"
+    commands:
+      - '@echo ""'
+      - '@echo "========================================="'
+      - '@echo "✅ Complete bundle workflow finished"'
+      - '@echo "========================================="'
+      - '@echo ""'
+      - '@echo "Next steps:"'
+      - '@echo "  1. Push bundle image: make bundle-push"'
+      - '@echo "  2. Deploy to cluster: create CatalogSource referencing bundle image"'
+      - '@echo ""'
+    error_handling: "Fail if any dependency fails"
+    output_on_success: "Success banner with next steps"
+
+---
+# Integration with Existing Targets
+
+existing_target_modifications:
+  - target_name: "validate-all"
+    modification: "Add bundle-validate-sdk as dependency"
+    current_dependencies: ["constitution-check", "bundle-validate", "catalog-validate"]
+    new_dependencies: ["constitution-check", "bundle-validate", "bundle-validate-sdk", "catalog-validate"]
+    rationale: "Include bundle validation in comprehensive validation workflow"
+
+  - target_name: "help"
+    modification: "No changes needed (auto-discovers new targets via awk)"
+    behavior: "Automatically parses and displays new ##@ section and target descriptions"
+
+---
+# Target Naming Conventions
+
+conventions:
+  prefix: "bundle-"
+  suffix_meanings:
+    "-validate-sdk": "Validation using operator-sdk tool"
+    "-build": "Container image build operation"
+    "-push": "Container registry push operation"
+    "-all": "Complete workflow (validate + build, but not push)"
+
+  consistency_with_catalog_targets:
+    catalog_validate: "catalog-validate"
+    catalog_build: "catalog-build"
+    catalog_push: "catalog-push"
+    catalog_all: "olm-all (not catalog-all)"
+
+  rationale: "Mirrors catalog target naming for consistency and discoverability"
+
+---
+# Error Handling Standards
+
+error_handling_rules:
+  - rule: "Validation failure stops build"
+    implementation: "bundle-build depends on bundle-validate-sdk"
+    behavior: "Make will not execute bundle-build if bundle-validate-sdk fails"
+
+  - rule: "Build failure is fatal"
+    implementation: "No error suppression (no '-' prefix on podman build command)"
+    behavior: "Make exits immediately if podman build returns non-zero"
+
+  - rule: "Push requires authentication"
+    implementation: "No automatic login; user must authenticate manually"
+    behavior: "podman push fails with 401 if not authenticated; user sees clear error"
+
+  - rule: "Descriptive error messages"
+    implementation: "Tools (operator-sdk, podman) provide detailed errors on stderr"
+    behavior: "User sees root cause (e.g., 'missing annotation', 'file not found')"
+
+---
+# Expected Makefile Syntax
+
+makefile_syntax: |
+  ##@ OLM Bundle Image Targets
+
+  .PHONY: bundle-validate-sdk
+  bundle-validate-sdk: ## Validate OLM bundle with operator-sdk
+  	@echo "Validating bundle with operator-sdk..."
+  	operator-sdk bundle validate ./bundle --select-optional suite=operatorframework
+  	@echo "✅ Bundle validation passed"
+
+  .PHONY: bundle-build
+  bundle-build: bundle-validate-sdk ## Build bundle container image
+  	@echo "Building bundle container image..."
+  	podman build -f Containerfile.bundle -t ghcr.io/stacklok/toolhive/bundle:v0.2.17 .
+  	podman tag ghcr.io/stacklok/toolhive/bundle:v0.2.17 ghcr.io/stacklok/toolhive/bundle:latest
+  	@echo "✅ Bundle image built: ghcr.io/stacklok/toolhive/bundle:v0.2.17"
+  	@podman images ghcr.io/stacklok/toolhive/bundle
+
+  .PHONY: bundle-push
+  bundle-push: ## Push bundle image to registry
+  	@echo "Pushing bundle image to ghcr.io..."
+  	podman push ghcr.io/stacklok/toolhive/bundle:v0.2.17
+  	podman push ghcr.io/stacklok/toolhive/bundle:latest
+  	@echo "✅ Bundle image pushed"
+
+  .PHONY: bundle-all
+  bundle-all: bundle-validate-sdk bundle-build ## Run complete bundle workflow (validate, build)
+  	@echo ""
+  	@echo "========================================="
+  	@echo "✅ Complete bundle workflow finished"
+  	@echo "========================================="
+  	@echo ""
+  	@echo "Next steps:"
+  	@echo "  1. Push bundle image: make bundle-push"
+  	@echo "  2. Deploy to cluster: create CatalogSource referencing bundle image"
+  	@echo ""
+
+---
+# Usage Examples
+
+usage_examples:
+  - command: "make bundle-validate-sdk"
+    description: "Validate bundle metadata and manifests without building"
+    expected_output: "✅ Bundle validation passed"
+    use_case: "Pre-commit checks, CI validation stage"
+
+  - command: "make bundle-build"
+    description: "Validate and build bundle image (does not push)"
+    expected_output: "Bundle image listed in podman images"
+    use_case: "Local development, testing bundle changes"
+
+  - command: "make bundle-push"
+    description: "Push existing bundle image to registry"
+    expected_output: "✅ Bundle image pushed"
+    use_case: "Release workflow after successful build"
+    prerequisite: "podman login ghcr.io"
+
+  - command: "make bundle-all"
+    description: "Run complete workflow (validate + build, display next steps)"
+    expected_output: "Success banner with push instructions"
+    use_case: "One-command local testing, CI integration"
+
+  - command: "make validate-all"
+    description: "Run all validation (kustomize, bundle, catalog)"
+    expected_output: "All validations passed"
+    use_case: "Pre-release checks, constitution compliance verification"
+
+---
+# Testing Contract
+
+test_requirements:
+  - test_name: "Target discovery"
+    command: "make help"
+    expected_behavior: "New bundle-* targets appear in help output under 'OLM Bundle Image Targets' section"
+
+  - test_name: "Validation-before-build enforcement"
+    command: "make bundle-build (with invalid bundle)"
+    expected_behavior: "Build fails during bundle-validate-sdk step; podman build never runs"
+
+  - test_name: "Image tagging"
+    command: "make bundle-build"
+    expected_behavior: "Both v0.2.17 and latest tags appear in podman images output"
+
+  - test_name: "Catalog build non-interference"
+    command: "make catalog-build && make bundle-build"
+    expected_behavior: "Both images build successfully; neither affects the other"
+
+  - test_name: "Error propagation"
+    command: "make bundle-build (with operator-sdk not installed)"
+    expected_behavior: "Clear error message; make exits with non-zero code"

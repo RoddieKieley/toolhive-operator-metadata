@@ -1,0 +1,186 @@
+# OLM Bundle Validation Contract
+#
+# This contract defines the expected validation behavior and outputs from
+# operator-sdk bundle validate for the Toolhive Operator bundle.
+#
+# Validation Command:
+#   operator-sdk bundle validate ./bundle --select-optional suite=operatorframework
+
+---
+# Validation Categories
+validation_categories:
+  - name: "Bundle Structure Validation"
+    description: "Verifies bundle directory layout and file presence"
+    checks:
+      - id: "manifests-dir-exists"
+        description: "bundle/manifests/ directory exists"
+        severity: "error"
+
+      - id: "metadata-dir-exists"
+        description: "bundle/metadata/ directory exists"
+        severity: "error"
+
+      - id: "annotations-file-exists"
+        description: "bundle/metadata/annotations.yaml file exists"
+        severity: "error"
+
+      - id: "csv-file-exists"
+        description: "At least one *.clusterserviceversion.yaml file exists in manifests/"
+        severity: "error"
+
+  - name: "Metadata Validation"
+    description: "Verifies annotations.yaml contains required fields"
+    checks:
+      - id: "required-annotations-present"
+        description: "All required OLM annotations are declared"
+        required_annotations:
+          - "operators.operatorframework.io.bundle.mediatype.v1"
+          - "operators.operatorframework.io.bundle.manifests.v1"
+          - "operators.operatorframework.io.bundle.metadata.v1"
+          - "operators.operatorframework.io.bundle.package.v1"
+          - "operators.operatorframework.io.bundle.channels.v1"
+          - "operators.operatorframework.io.bundle.channel.default.v1"
+        severity: "error"
+
+      - id: "annotations-valid-yaml"
+        description: "annotations.yaml is parseable as valid YAML"
+        severity: "error"
+
+      - id: "mediatype-value"
+        description: "bundle.mediatype.v1 must be 'registry+v1'"
+        expected_value: "registry+v1"
+        severity: "error"
+
+  - name: "CSV Validation"
+    description: "Verifies ClusterServiceVersion manifest correctness"
+    checks:
+      - id: "csv-valid-yaml"
+        description: "CSV file is parseable as valid YAML"
+        severity: "error"
+
+      - id: "csv-version-present"
+        description: "CSV spec.version field is set"
+        severity: "error"
+
+      - id: "crd-ownership-declared"
+        description: "CSV spec.customresourcedefinitions.owned lists all CRDs in manifests/"
+        expected_owned_crds:
+          - name: "mcpregistries.toolhive.stacklok.dev"
+            version: "v1alpha1"
+            kind: "MCPRegistry"
+          - name: "mcpservers.toolhive.stacklok.dev"
+            version: "v1alpha1"
+            kind: "MCPServer"
+        severity: "error"
+
+      - id: "install-spec-present"
+        description: "CSV spec.install.spec contains deployment and permissions"
+        severity: "error"
+
+      - id: "container-images-valid"
+        description: "All container image references are well-formed"
+        severity: "warning"
+
+      - id: "rbac-permissions-complete"
+        description: "CSV declares all necessary RBAC permissions"
+        severity: "warning"
+
+  - name: "CRD Validation"
+    description: "Verifies CustomResourceDefinition manifests"
+    checks:
+      - id: "crd-valid-yaml"
+        description: "All CRD files are parseable as valid YAML"
+        severity: "error"
+
+      - id: "crd-schema-valid"
+        description: "CRD OpenAPI v3 schemas are well-formed"
+        severity: "error"
+
+      - id: "crd-name-format"
+        description: "CRD metadata.name follows '<plural>.<group>' pattern"
+        expected_names:
+          - "mcpregistries.toolhive.stacklok.dev"
+          - "mcpservers.toolhive.stacklok.dev"
+        severity: "error"
+
+      - id: "crd-version-consistency"
+        description: "CRD versions match those declared in CSV owned list"
+        severity: "error"
+
+---
+# Expected Validation Output (Success)
+expected_success_output: |
+  INFO[0000] All validation tests have completed successfully
+
+# Expected Exit Code (Success)
+expected_success_exit_code: 0
+
+---
+# Common Validation Failures and Resolutions
+common_failures:
+  - error: "ERROR: Value operators.operatorframework.io.bundle.manifests.v1: manifests/: directory not found in bundle"
+    cause: "Manifests directory missing or incorrectly named"
+    resolution: "Ensure bundle/manifests/ directory exists and contains CSV + CRD files"
+
+  - error: "ERROR: owned CRD 'mcpregistries.toolhive.stacklok.dev' not found in bundle"
+    cause: "CSV declares ownership of CRD that isn't present in manifests/"
+    resolution: "Add missing CRD to bundle/manifests/ or remove from CSV spec.customresourcedefinitions.owned"
+
+  - error: "ERROR: bundle.mediatype.v1 annotation has invalid value"
+    cause: "Mediatype annotation is not 'registry+v1'"
+    resolution: "Set operators.operatorframework.io.bundle.mediatype.v1 to 'registry+v1' in annotations.yaml"
+
+  - error: "WARN: channel 'stable' is not listed in bundle.channels.v1"
+    cause: "Default channel not included in channels list"
+    resolution: "Add default channel to comma-separated channels list in annotations.yaml"
+
+  - error: "ERROR: ClusterServiceVersion spec.version does not match bundle directory name"
+    cause: "Version mismatch between CSV and bundle metadata"
+    resolution: "Ensure CSV spec.version matches expected operator version"
+
+---
+# Validation Test Execution Contract
+
+# Pre-build validation (MUST pass before image build):
+pre_build_validation:
+  command: "operator-sdk bundle validate ./bundle --select-optional suite=operatorframework"
+  working_directory: "repository root"
+  required_tools:
+    - name: "operator-sdk"
+      minimum_version: "v1.30.0"
+  success_criteria:
+    - exit_code: 0
+    - output_contains: "All validation tests have completed successfully"
+  failure_behavior: "Build MUST NOT proceed if validation fails"
+
+# Post-build validation (SHOULD pass to verify image correctness):
+post_build_validation:
+  command: "operator-sdk bundle validate ghcr.io/stacklok/toolhive/bundle:v0.2.17"
+  prerequisite: "Bundle image has been built and is available locally"
+  success_criteria:
+    - exit_code: 0
+    - output_contains: "All validation tests have completed successfully"
+  failure_behavior: "Warn user; image may not deploy correctly to OLMv0 clusters"
+
+---
+# Integration with Makefile
+
+# Makefile target contract:
+makefile_target: "bundle-validate-sdk"
+target_behavior:
+  phony: true
+  dependencies: []
+  commands:
+    - description: "Display validation start message"
+      command: 'echo "Validating bundle with operator-sdk..."'
+    - description: "Run operator-sdk validation"
+      command: "operator-sdk bundle validate ./bundle --select-optional suite=operatorframework"
+    - description: "Display success message"
+      command: 'echo "✅ Bundle validation passed"'
+  error_handling: "Target fails immediately if operator-sdk returns non-zero exit code"
+
+# Integration with bundle-build target:
+bundle_build_dependency:
+  description: "bundle-build MUST depend on bundle-validate-sdk"
+  rationale: "Prevents building invalid bundles that will fail deployment"
+  makefile_syntax: "bundle-build: bundle-validate-sdk"

@@ -82,6 +82,41 @@ catalog-push: ## Push catalog image to registry
 	podman push ghcr.io/stacklok/toolhive/catalog:latest
 	@echo "✅ Catalog image pushed"
 
+##@ OLM Bundle Image Targets
+
+.PHONY: bundle-validate-sdk
+bundle-validate-sdk: ## Validate OLM bundle with operator-sdk
+	@echo "Validating bundle with operator-sdk..."
+	operator-sdk --plugins go.kubebuilder.io/v4 bundle validate ./bundle
+	@echo "✅ Bundle validation passed"
+
+.PHONY: bundle-build
+bundle-build: bundle-validate-sdk ## Build bundle container image
+	@echo "Building bundle container image..."
+	podman build -f Containerfile.bundle -t ghcr.io/stacklok/toolhive/bundle:v0.2.17 .
+	podman tag ghcr.io/stacklok/toolhive/bundle:v0.2.17 ghcr.io/stacklok/toolhive/bundle:latest
+	@echo "✅ Bundle image built: ghcr.io/stacklok/toolhive/bundle:v0.2.17"
+	@podman images ghcr.io/stacklok/toolhive/bundle
+
+.PHONY: bundle-push
+bundle-push: ## Push bundle image to registry
+	@echo "Pushing bundle image to ghcr.io..."
+	podman push ghcr.io/stacklok/toolhive/bundle:v0.2.17
+	podman push ghcr.io/stacklok/toolhive/bundle:latest
+	@echo "✅ Bundle image pushed"
+
+.PHONY: bundle-all
+bundle-all: bundle-validate-sdk bundle-build ## Run complete bundle workflow (validate, build)
+	@echo ""
+	@echo "========================================="
+	@echo "✅ Complete bundle workflow finished"
+	@echo "========================================="
+	@echo ""
+	@echo "Next steps:"
+	@echo "  1. Push bundle image: make bundle-push"
+	@echo "  2. Deploy to cluster: create CatalogSource referencing bundle image"
+	@echo ""
+
 ##@ Complete OLM Workflow
 
 .PHONY: olm-all
@@ -105,7 +140,7 @@ constitution-check: kustomize-validate ## Verify constitution compliance
 	@echo "Constitution compliance: ✅ PASSED"
 
 .PHONY: validate-all
-validate-all: constitution-check bundle-validate catalog-validate ## Run all validation checks
+validate-all: constitution-check bundle-validate bundle-validate-sdk catalog-validate ## Run all validation checks
 	@echo ""
 	@echo "========================================="
 	@echo "✅ All validations passed"

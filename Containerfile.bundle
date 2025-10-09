@@ -1,0 +1,46 @@
+# Containerfile for building OLMv0 Bundle image
+#
+# This Containerfile creates a bundle image containing operator manifests (CSV, CRDs)
+# and metadata for deployment via OLMv0 on legacy Kubernetes/OpenShift clusters.
+#
+# Build command:
+#   podman build -f Containerfile.bundle -t ghcr.io/stacklok/toolhive/bundle:v0.2.17 .
+#
+# Validation command (before build):
+#   /opt/operator-sdk/bin/operator-sdk --plugins go.kubebuilder.io/v4 bundle validate ./bundle --select-optional suite=operatorframework
+#
+# Validation command (after build):
+#   /opt/operator-sdk/bin/operator-sdk --plugins go.kubebuilder.io/v4 bundle validate ghcr.io/stacklok/toolhive/bundle:v0.2.17
+
+# Use scratch base image for minimal size and security
+# Bundle images are data-only (no executables needed)
+FROM scratch
+
+# Add bundle directories to standard OLM paths
+# /manifests/ contains CSV and CRD YAML files
+# /metadata/ contains annotations.yaml with OLM metadata
+ADD bundle/manifests /manifests/
+ADD bundle/metadata /metadata/
+
+# Required OLM labels for bundle discovery
+# These MUST match the annotations in /metadata/annotations.yaml
+LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
+LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
+LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
+LABEL operators.operatorframework.io.bundle.package.v1=toolhive-operator
+LABEL operators.operatorframework.io.bundle.channels.v1=fast
+LABEL operators.operatorframework.io.bundle.channel.default.v1=fast
+
+# Optional metadata labels for image documentation and registry display
+LABEL org.opencontainers.image.title="Toolhive Operator Bundle"
+LABEL org.opencontainers.image.description="OLMv0 Bundle for Toolhive Operator (manages MCP servers and registries)"
+LABEL org.opencontainers.image.vendor="Stacklok"
+LABEL org.opencontainers.image.source="https://github.com/RHEcosystemAppEng/toolhive-operator-metadata"
+LABEL org.opencontainers.image.version="v0.2.17"
+LABEL org.opencontainers.image.licenses="Apache-2.0"
+
+# OpenShift-specific label indicating supported versions
+LABEL com.redhat.openshift.versions="v4.10-v4.19"
+
+# No ENTRYPOINT or CMD needed - this is a data-only image
+# OLM reads the bundle metadata and manifests directly from the image filesystem

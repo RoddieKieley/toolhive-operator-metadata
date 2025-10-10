@@ -13,7 +13,7 @@ CONTAINER_TOOL ?= podman
 help: ## Display this help message
 	@echo "Toolhive Operator Metadata - Available Targets:"
 	@echo ""
-	@awk 'BEGIN {FS = ":.*##"; printf "\033[36m%-30s\033[0m %s\n", "Target", "Description"} /^[a-zA-Z_-]+:.*?##/ { printf "\033[36m%-30s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*##"; printf "\033[36m%-30s\033[0m %s\n", "Target", "Description"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "\033[36m%-30s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 ##@ Kustomize Targets
 
@@ -59,7 +59,11 @@ bundle-validate: ## Validate OLM bundle with operator-sdk
 	@echo "Bundle validation: manual checks passed"
 	@echo "Note: For full operator-sdk validation, run: operator-sdk bundle validate ./bundle"
 
-##@ OLM Catalog Targets
+##@ OLM Catalog Targets (OLMv1 - Modern OpenShift 4.19+)
+#
+# These targets work with File-Based Catalog (FBC) images for modern OLM.
+# The catalog image IS the index/catalog image - no wrapper needed.
+# For legacy OpenShift 4.15-4.18, see "OLM Index Targets (OLMv0)" below.
 
 .PHONY: catalog
 catalog: ## Generate FBC catalog metadata
@@ -133,6 +137,20 @@ bundle-all: bundle-validate-sdk bundle-build ## Run complete bundle workflow (va
 	@echo ""
 
 ##@ OLM Index Targets (OLMv0 - Legacy OpenShift 4.15-4.18)
+#
+# ⚠️  DEPRECATION NOTICE: SQLite-based index images are deprecated by operator-framework.
+# These targets are for legacy OpenShift compatibility ONLY.
+#
+# Key differences from OLMv1:
+#   - OLMv0 bundle images MUST be wrapped in a SQLite index image
+#   - Use `opm index add` (deprecated) to create index from bundle
+#   - Index contains SQLite database at /database/index.db
+#   - Separate image name: index-olmv0 (vs catalog for OLMv1)
+#
+# DO NOT mix OLMv0 and OLMv1 formats for the same operator version.
+# Use EITHER catalog targets (OLMv1) OR index-olmv0 targets (OLMv0), not both.
+#
+# Sunset timeline: When OpenShift 4.18 reaches EOL (Q1 2026), remove these targets.
 
 .PHONY: index-olmv0-build
 index-olmv0-build: ## Build OLMv0 index image (SQLite-based, deprecated)
@@ -204,6 +222,18 @@ index-clean: ## Remove local OLMv0 index images
 	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/index-olmv0:latest
 	@echo "✅ OLMv0 index images removed"
 
+.PHONY: index-validate-all
+index-validate-all: catalog-validate index-olmv0-validate ## Validate both OLMv1 catalog and OLMv0 index
+	@echo ""
+	@echo "========================================="
+	@echo "✅ All index/catalog validations passed"
+	@echo "========================================="
+	@echo ""
+	@echo "Validated:"
+	@echo "  ✅ OLMv1 FBC Catalog (modern OpenShift 4.19+)"
+	@echo "  ✅ OLMv0 SQLite Index (legacy OpenShift 4.15-4.18)"
+	@echo ""
+
 ##@ Complete OLM Workflow
 
 .PHONY: olm-all
@@ -227,11 +257,18 @@ constitution-check: kustomize-validate ## Verify constitution compliance
 	@echo "Constitution compliance: ✅ PASSED"
 
 .PHONY: validate-all
-validate-all: constitution-check bundle-validate bundle-validate-sdk catalog-validate ## Run all validation checks
+validate-all: constitution-check bundle-validate bundle-validate-sdk catalog-validate index-olmv0-validate ## Run all validation checks
 	@echo ""
 	@echo "========================================="
 	@echo "✅ All validations passed"
 	@echo "========================================="
+	@echo ""
+	@echo "Validated components:"
+	@echo "  ✅ Constitution compliance (kustomize builds, CRD immutability)"
+	@echo "  ✅ OLMv0 Bundle structure and manifests"
+	@echo "  ✅ OLMv1 FBC Catalog"
+	@echo "  ✅ OLMv0 SQLite Index"
+	@echo ""
 
 ##@ Cleanup
 
@@ -243,11 +280,13 @@ clean: ## Clean generated bundle and catalog artifacts
 	@echo "✅ Cleaned bundle/ and catalog/ directories"
 
 .PHONY: clean-images
-clean-images: ## Remove local catalog container images
-	@echo "Removing catalog images..."
-	-podman rmi ghcr.io/stacklok/toolhive/catalog:v0.2.17
-	-podman rmi ghcr.io/stacklok/toolhive/catalog:latest
-	@echo "✅ Catalog images removed"
+clean-images: ## Remove local catalog and index container images
+	@echo "Removing catalog and index images..."
+	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/catalog:v0.2.17
+	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/catalog:latest
+	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/index-olmv0:v0.2.17
+	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/index-olmv0:latest
+	@echo "✅ Catalog and index images removed"
 
 ##@ Documentation
 

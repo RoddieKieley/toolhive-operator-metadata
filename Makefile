@@ -3,6 +3,12 @@
 # This Makefile provides targets for building, validating, and managing
 # OLM bundles and File-Based Catalogs (FBC) for the Toolhive Operator.
 
+# OLMv0 Index Image Configuration (Legacy OpenShift 4.15-4.18)
+BUNDLE_IMG ?= ghcr.io/stacklok/toolhive/bundle:v0.2.17
+INDEX_OLMV0_IMG ?= ghcr.io/stacklok/toolhive/index-olmv0:v0.2.17
+OPM_MODE ?= semver
+CONTAINER_TOOL ?= podman
+
 .PHONY: help
 help: ## Display this help message
 	@echo "Toolhive Operator Metadata - Available Targets:"
@@ -67,6 +73,14 @@ catalog-validate: ## Validate FBC catalog with opm
 	@opm validate catalog/
 	@echo "✅ FBC catalog validation passed"
 
+.PHONY: catalog-validate-existing
+catalog-validate-existing: ## Validate existing OLMv1 catalog (no rebuild needed)
+	@echo "Validating existing OLMv1 FBC catalog..."
+	@opm validate catalog/
+	@echo "✅ OLMv1 catalog validation passed"
+	@echo "   The catalog image is already a valid index/catalog image."
+	@echo "   No additional index wrapper needed for OLMv1."
+
 .PHONY: catalog-build
 catalog-build: catalog-validate ## Build catalog container image
 	@echo "Building catalog container image..."
@@ -114,8 +128,81 @@ bundle-all: bundle-validate-sdk bundle-build ## Run complete bundle workflow (va
 	@echo ""
 	@echo "Next steps:"
 	@echo "  1. Push bundle image: make bundle-push"
-	@echo "  2. Deploy to cluster: create CatalogSource referencing bundle image"
+	@echo "  2. Build OLMv0 index: make index-olmv0-build"
+	@echo "  3. Deploy to cluster: create CatalogSource referencing index image"
 	@echo ""
+
+##@ OLM Index Targets (OLMv0 - Legacy OpenShift 4.15-4.18)
+
+.PHONY: index-olmv0-build
+index-olmv0-build: ## Build OLMv0 index image (SQLite-based, deprecated)
+	@echo "⚠️  Building OLMv0 index image (SQLite-based, deprecated)"
+	@echo "   Use only for legacy OpenShift 4.15-4.18 compatibility"
+	@echo ""
+	@echo "Building index referencing bundle: $(BUNDLE_IMG)"
+	opm index add \
+		--bundles $(BUNDLE_IMG) \
+		--tag $(INDEX_OLMV0_IMG) \
+		--mode $(OPM_MODE) \
+		--container-tool $(CONTAINER_TOOL)
+	@echo ""
+	@echo "✅ OLMv0 index image built: $(INDEX_OLMV0_IMG)"
+	@$(CONTAINER_TOOL) images $(INDEX_OLMV0_IMG)
+	@echo ""
+	@echo "Tagging as latest..."
+	$(CONTAINER_TOOL) tag $(INDEX_OLMV0_IMG) ghcr.io/stacklok/toolhive/index-olmv0:latest
+	@echo "✅ Also tagged: ghcr.io/stacklok/toolhive/index-olmv0:latest"
+
+.PHONY: index-olmv0-validate
+index-olmv0-validate: ## Validate OLMv0 index image
+	@echo "Validating OLMv0 index image..."
+	@echo "Exporting package manifest from index..."
+	@opm index export \
+		--index=$(INDEX_OLMV0_IMG) \
+		--package=toolhive-operator > /tmp/toolhive-index-olmv0-export.yaml
+	@echo ""
+	@echo "✅ OLMv0 index validation passed"
+	@echo "   Package manifest exported to /tmp/toolhive-index-olmv0-export.yaml"
+	@echo ""
+	@echo "Package summary:"
+	@if command -v yq > /dev/null 2>&1; then \
+		yq eval '.metadata.name, .spec.channels[].name, .spec.channels[].currentCSV' /tmp/toolhive-index-olmv0-export.yaml; \
+	else \
+		echo "   (install yq for formatted output)"; \
+		grep -E '(name:|currentCSV:)' /tmp/toolhive-index-olmv0-export.yaml | head -5; \
+	fi
+
+.PHONY: index-olmv0-push
+index-olmv0-push: ## Push OLMv0 index image to registry
+	@echo "Pushing OLMv0 index image to ghcr.io..."
+	$(CONTAINER_TOOL) push $(INDEX_OLMV0_IMG)
+	$(CONTAINER_TOOL) push ghcr.io/stacklok/toolhive/index-olmv0:latest
+	@echo "✅ OLMv0 index image pushed"
+	@echo "   - $(INDEX_OLMV0_IMG)"
+	@echo "   - ghcr.io/stacklok/toolhive/index-olmv0:latest"
+
+.PHONY: index-olmv0-all
+index-olmv0-all: index-olmv0-build index-olmv0-validate index-olmv0-push ## Run complete OLMv0 index workflow
+	@echo ""
+	@echo "========================================="
+	@echo "✅ Complete OLMv0 index workflow finished"
+	@echo "========================================="
+	@echo ""
+	@echo "⚠️  REMINDER: SQLite-based indexes are deprecated"
+	@echo "   Use only for legacy OpenShift 4.15-4.18 deployments"
+	@echo ""
+	@echo "Next steps:"
+	@echo "  1. Deploy CatalogSource: kubectl apply -f examples/catalogsource-olmv0.yaml"
+	@echo "  2. Verify catalog: kubectl get catalogsource -n olm toolhive-catalog-olmv0"
+	@echo "  3. Check OperatorHub for Toolhive Operator"
+	@echo ""
+
+.PHONY: index-clean
+index-clean: ## Remove local OLMv0 index images
+	@echo "Removing OLMv0 index images..."
+	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/index-olmv0:v0.2.17
+	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/index-olmv0:latest
+	@echo "✅ OLMv0 index images removed"
 
 ##@ Complete OLM Workflow
 

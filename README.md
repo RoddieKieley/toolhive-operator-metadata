@@ -45,9 +45,11 @@ podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.2.
 
 ### Installing via OLM
 
+#### Modern OpenShift (4.19+) - Recommended
+
 1. Deploy the CatalogSource:
    ```shell
-   kubectl apply -f examples/catalogsource.yaml
+   kubectl apply -f examples/catalogsource-olmv1.yaml
    ```
 
 2. Install the operator:
@@ -61,6 +63,24 @@ podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.2.
    kubectl get csv -n toolhive-system
    kubectl get pods -n toolhive-system
    ```
+
+#### Legacy OpenShift (4.15-4.18)
+
+For older OpenShift versions, use the OLMv0 index image:
+
+1. Build the OLMv0 index image:
+   ```shell
+   make index-olmv0-build
+   ```
+
+2. Deploy the CatalogSource:
+   ```shell
+   kubectl apply -f examples/catalogsource-olmv0.yaml
+   ```
+
+3. Install the operator (same as modern OpenShift)
+
+**Note**: OLMv0 support is temporary for legacy versions and will be sunset when OpenShift 4.18 reaches end-of-life.
 
 ## Repository Structure
 

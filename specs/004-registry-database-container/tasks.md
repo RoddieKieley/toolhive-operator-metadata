@@ -63,15 +63,15 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Rename `examples/catalogsource.yaml` to `examples/catalogsource-olmv1.yaml` using `git mv`
-- [ ] T012 [US1] Update `examples/catalogsource-olmv1.yaml` header comments to clarify:
+- [x] T011 [US1] Rename `examples/catalogsource.yaml` to `examples/catalogsource-olmv1.yaml` using `git mv`
+- [x] T012 [US1] Update `examples/catalogsource-olmv1.yaml` header comments to clarify:
   - This is for OpenShift 4.19+ (modern OLM)
   - References File-Based Catalog (FBC) image
   - Catalog image IS the index/catalog image (no wrapper)
   - Add OpenShift version prerequisite note
-- [ ] T013 [US1] Update `examples/catalogsource-olmv1.yaml` metadata: Change `name` to `toolhive-catalog` (remove any `-olmv1` suffix for backwards compatibility)
-- [ ] T014 [US1] Add deprecation notice to `examples/catalogsource-olmv1.yaml` comments explaining SQLite-based catalogs are deprecated
-- [ ] T015 [US1] Add Makefile target `catalog-validate-existing` to validate existing OLMv1 catalog in `##@ OLM Catalog Targets` section:
+- [x] T013 [US1] Update `examples/catalogsource-olmv1.yaml` metadata: Change `name` to `toolhive-catalog` (remove any `-olmv1` suffix for backwards compatibility)
+- [x] T014 [US1] Add deprecation notice to `examples/catalogsource-olmv1.yaml` comments explaining SQLite-based catalogs are deprecated
+- [x] T015 [US1] Add Makefile target `catalog-validate-existing` to validate existing OLMv1 catalog in `##@ OLM Catalog Targets` section:
   ```makefile
   .PHONY: catalog-validate-existing
   catalog-validate-existing: ## Validate existing OLMv1 catalog (no rebuild needed)
@@ -81,7 +81,7 @@
   	@echo "   The catalog image is already a valid index/catalog image."
   	@echo "   No additional index wrapper needed for OLMv1."
   ```
-- [ ] T016 [P] [US1] Update README.md or VALIDATION.md to reference `catalogsource-olmv1.yaml` for modern deployments (if such documentation exists)
+- [x] T016 [P] [US1] Update README.md or VALIDATION.md to reference `catalogsource-olmv1.yaml` for modern deployments (if such documentation exists)
 
 **Checkpoint**: OLMv1 deployment pattern documented and validated. Administrators can deploy to OpenShift 4.19+ using `catalogsource-olmv1.yaml`.
 

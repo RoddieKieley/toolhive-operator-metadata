@@ -1,0 +1,52 @@
+---
+# CatalogSource for Toolhive Operator (OLMv1 - Modern OpenShift 4.19+)
+#
+# This CatalogSource references a File-Based Catalog (FBC) image for modern
+# OpenShift deployments. FBC is the recommended catalog format for OLM.
+#
+# IMPORTANT: The catalog image referenced here IS the index/catalog image.
+# No additional index wrapper is needed for OLMv1 File-Based Catalogs.
+# The catalog image contains FBC metadata and can be referenced directly.
+#
+# Prerequisites:
+#   - OpenShift 4.19+ or Kubernetes with OLM v1 installed
+#   - Catalog image available: ghcr.io/stacklok/toolhive/catalog:v0.2.17
+#
+# Usage:
+#   kubectl apply -f examples/catalogsource-olmv1.yaml
+#
+# Verification:
+#   kubectl get catalogsource -n olm toolhive-catalog
+#   kubectl get packagemanifest | grep toolhive
+#   # The operator should appear in the OpenShift OperatorHub UI
+#
+# Note: For legacy OpenShift 4.15-4.18, use catalogsource-olmv0.yaml instead.
+#       SQLite-based index images (OLMv0) are deprecated but required for
+#       older OpenShift versions. This OLMv1 approach is recommended for
+#       all modern deployments.
+
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: toolhive-catalog
+  namespace: olm
+spec:
+  # Source type: grpc (image-based catalog served via gRPC API)
+  sourceType: grpc
+
+  # Catalog image: OLMv1 File-Based Catalog
+  # This image contains FBC metadata in /configs directory
+  # It IS the catalog/index image - no wrapper needed
+  image: ghcr.io/stacklok/toolhive/catalog:v0.2.17
+
+  # Display name shown in OperatorHub
+  displayName: Toolhive Operator Catalog
+
+  # Publisher organization
+  publisher: Stacklok
+
+  # Update strategy: poll registry every 15 minutes for image updates
+  # OLM will automatically pull newer catalog images when available
+  updateStrategy:
+    registryPoll:
+      interval: 15m

@@ -1,0 +1,59 @@
+---
+# CatalogSource for Toolhive Operator (OLMv0 - Legacy OpenShift 4.15-4.18)
+#
+# ⚠️  DEPRECATION NOTICE
+# This CatalogSource uses a SQLite-based index image (OLMv0), which is
+# deprecated by operator-framework. Use only for legacy OpenShift versions.
+# For modern OpenShift 4.19+, use catalogsource-olmv1.yaml instead.
+#
+# This CatalogSource references an OLMv0 index image that wraps the bundle
+# image. Bundle images cannot be used directly in CatalogSource - they must
+# be referenced through an index image.
+#
+# Prerequisites:
+#   - OpenShift 4.15-4.18 or Kubernetes with OLM v0
+#   - Index image available: ghcr.io/stacklok/toolhive/index-olmv0:v0.2.17
+#   - Index image built using: make index-olmv0-build
+#
+# Usage:
+#   # 1. Build the index image (if not already built)
+#   make index-olmv0-build
+#
+#   # 2. Deploy the CatalogSource
+#   kubectl apply -f examples/catalogsource-olmv0.yaml
+#
+# Verification:
+#   kubectl get catalogsource -n olm toolhive-catalog-olmv0
+#   kubectl get packagemanifest | grep toolhive
+#   # The operator should appear in the OpenShift OperatorHub UI
+#
+# Deprecation Timeline:
+#   - Q1 2026: OpenShift 4.18 reaches end-of-life
+#   - After Q1 2026: This OLMv0 support will be discontinued
+#   - Migration: Use catalogsource-olmv1.yaml for OpenShift 4.19+
+
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: toolhive-catalog-olmv0
+  namespace: olm
+spec:
+  # Source type: grpc (image-based catalog served via gRPC API)
+  sourceType: grpc
+
+  # Index image: OLMv0 SQLite-based index (DEPRECATED)
+  # This image contains a SQLite database at /database/index.db
+  # The database references the bundle image: ghcr.io/stacklok/toolhive/bundle:v0.2.17
+  image: ghcr.io/stacklok/toolhive/index-olmv0:v0.2.17
+
+  # Display name shown in OperatorHub (indicates legacy format)
+  displayName: Toolhive Operator Catalog (Legacy)
+
+  # Publisher organization
+  publisher: Stacklok
+
+  # Update strategy: poll registry every 30 minutes for image updates
+  # Longer interval than OLMv1 since this is for legacy deployments
+  updateStrategy:
+    registryPoll:
+      interval: 30m

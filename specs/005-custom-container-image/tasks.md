@@ -21,19 +21,19 @@
 
 **Purpose**: Understand current Makefile structure and prepare for implementation
 
-- [ ] T001 [Setup] Review existing Makefile structure and variable definitions
+- [x] T001 [Setup] Review existing Makefile structure and variable definitions
   - Identify lines 7-10 where BUNDLE_IMG and INDEX_OLMV0_IMG are defined
   - Map all targets that reference these variables or hardcoded image names
   - Document current image reference patterns from research.md findings
-- [ ] T002 [P] [Setup] Review research.md findings on variable composition patterns
+- [x] T002 [P] [Setup] Review research.md findings on variable composition patterns
   - Understand `?=` vs `:=` operator usage
   - Understand override precedence (CLI > environment > Makefile)
   - Review the 15-variable set design (12 base + 3 composites)
-- [ ] T003 [P] [Setup] Review data-model.md and contracts/makefile-variables.md
+- [x] T003 [P] [Setup] Review data-model.md and contracts/makefile-variables.md
   - Understand component structure (registry, org, name, tag)
   - Review variable naming convention: `{IMAGE_TYPE}_{COMPONENT}`
   - Understand composition pattern: base components → composite variables
-- [ ] T004 [P] [Setup] Create backup of current Makefile
+- [x] T004 [P] [Setup] Create backup of current Makefile
   - Copy Makefile to Makefile.backup-pre-005
   - Use for comparison testing after implementation
 
@@ -47,27 +47,27 @@
 
 **⚠️ CRITICAL**: All user stories require this foundation. Must complete before any US can start.
 
-- [ ] T005 [Foundation] Add OLMv1 Catalog component variables to Makefile (after line 10, before help target)
+- [x] T005 [Foundation] Add OLMv1 Catalog component variables to Makefile (after line 10, before help target)
   - Add `CATALOG_REGISTRY ?= ghcr.io`
   - Add `CATALOG_ORG ?= stacklok/toolhive`
   - Add `CATALOG_NAME ?= catalog`
   - Add `CATALOG_TAG ?= v0.2.17`
   - Add comment block explaining OLMv1 catalog image components
-- [ ] T006 [Foundation] Refactor existing BUNDLE_IMG to component-based composition
+- [x] T006 [Foundation] Refactor existing BUNDLE_IMG to component-based composition
   - Add `BUNDLE_REGISTRY ?= ghcr.io` (before existing BUNDLE_IMG line)
   - Add `BUNDLE_ORG ?= stacklok/toolhive`
   - Add `BUNDLE_NAME ?= bundle`
   - Add `BUNDLE_TAG ?= v0.2.17`
   - Change `BUNDLE_IMG ?= ghcr.io/stacklok/toolhive/bundle:v0.2.17` to `BUNDLE_IMG := $(BUNDLE_REGISTRY)/$(BUNDLE_ORG)/$(BUNDLE_NAME):$(BUNDLE_TAG)`
   - Add comment block explaining OLMv0 bundle image components
-- [ ] T007 [Foundation] Refactor existing INDEX_OLMV0_IMG to component-based composition
+- [x] T007 [Foundation] Refactor existing INDEX_OLMV0_IMG to component-based composition
   - Add `INDEX_REGISTRY ?= ghcr.io` (before existing INDEX_OLMV0_IMG line)
   - Add `INDEX_ORG ?= stacklok/toolhive`
   - Add `INDEX_NAME ?= index-olmv0`
   - Add `INDEX_TAG ?= v0.2.17`
   - Change `INDEX_OLMV0_IMG ?= ghcr.io/stacklok/toolhive/index-olmv0:v0.2.17` to `INDEX_OLMV0_IMG := $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):$(INDEX_TAG)`
   - Add comment block explaining OLMv0 index image components
-- [ ] T008 [Foundation] Add composite CATALOG_IMG variable using component composition
+- [x] T008 [Foundation] Add composite CATALOG_IMG variable using component composition
   - Add `CATALOG_IMG := $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):$(CATALOG_TAG)` after catalog components
   - Ensure immediate expansion using `:=` operator
 
@@ -83,30 +83,30 @@
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Update catalog-build target to use CATALOG_IMG variable
+- [x] T009 [US1] Update catalog-build target to use CATALOG_IMG variable
   - Replace hardcoded `ghcr.io/stacklok/toolhive/catalog:v0.2.17` with `$(CATALOG_IMG)`
   - Update podman/docker build command to use variable
   - Update echo statements to show resolved image name
-- [ ] T010 [US1] Update catalog-push target to use CATALOG_IMG variable
+- [x] T010 [US1] Update catalog-push target to use CATALOG_IMG variable
   - Replace hardcoded image references with `$(CATALOG_IMG)`
   - Ensure push command uses variable
-- [ ] T011 [US1] Update catalog-validate target to use CATALOG_IMG variable (if it references image name)
-  - Replace any hardcoded catalog image references with `$(CATALOG_IMG)`
-- [ ] T012 [US1] Verify bundle-build and bundle-push targets use BUNDLE_IMG composite variable
+- [x] T011 [US1] Update catalog-validate target to use CATALOG_IMG variable (if it references image name)
+  - Replace any hardcoded catalog image references with `$(CATALOG_IMG)` - N/A (doesn't reference image)
+- [x] T012 [US1] Verify bundle-build and bundle-push targets use BUNDLE_IMG composite variable
   - Confirm no hardcoded `ghcr.io/stacklok/toolhive/bundle` references remain
   - All references should use `$(BUNDLE_IMG)` after refactoring in T006
-- [ ] T013 [US1] Verify index-olmv0-build and index-olmv0-push targets use INDEX_OLMV0_IMG composite variable
+- [x] T013 [US1] Verify index-olmv0-build and index-olmv0-push targets use INDEX_OLMV0_IMG composite variable
   - Confirm no hardcoded `ghcr.io/stacklok/toolhive/index-olmv0` references remain
   - All references should use `$(INDEX_OLMV0_IMG)` after refactoring in T007
-- [ ] T014 [P] [US1] Test default registry behavior (no overrides)
+- [x] T014 [P] [US1] Test default registry behavior (no overrides)
   - Run `make catalog-build` and verify image uses `ghcr.io/stacklok/toolhive/catalog:v0.2.17`
   - Run `make bundle-build` and verify image uses `ghcr.io/stacklok/toolhive/bundle:v0.2.17`
   - Run `make index-olmv0-build` and verify image uses `ghcr.io/stacklok/toolhive/index-olmv0:v0.2.17`
-- [ ] T015 [P] [US1] Test registry override for catalog image only
+- [x] T015 [P] [US1] Test registry override for catalog image only
   - Run `make catalog-build CATALOG_REGISTRY=quay.io`
   - Verify catalog image uses `quay.io/stacklok/toolhive/catalog:v0.2.17`
   - Verify bundle and index still use `ghcr.io` (independence test)
-- [ ] T016 [P] [US1] Test registry override for all three images separately
+- [x] T016 [P] [US1] Test registry override for all three images separately
   - Override BUNDLE_REGISTRY to `quay.io` and verify bundle image
   - Override INDEX_REGISTRY to `docker.io` and verify index image
   - Confirm each override is independent (doesn't affect other images)

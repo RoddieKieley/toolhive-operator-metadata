@@ -3,9 +3,34 @@
 # This Makefile provides targets for building, validating, and managing
 # OLM bundles and File-Based Catalogs (FBC) for the Toolhive Operator.
 
+# OLMv1 Catalog Image Configuration (Modern OpenShift 4.19+)
+# Components can be overridden via environment variables or make arguments:
+#   make catalog-build CATALOG_REGISTRY=quay.io CATALOG_ORG=myuser
+CATALOG_REGISTRY ?= ghcr.io
+CATALOG_ORG ?= stacklok/toolhive
+CATALOG_NAME ?= catalog
+CATALOG_TAG ?= v0.2.17
+CATALOG_IMG := $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):$(CATALOG_TAG)
+
+# OLMv0 Bundle Image Configuration
+# Components can be overridden independently:
+#   make bundle-build BUNDLE_REGISTRY=quay.io BUNDLE_TAG=dev
+BUNDLE_REGISTRY ?= ghcr.io
+BUNDLE_ORG ?= stacklok/toolhive
+BUNDLE_NAME ?= bundle
+BUNDLE_TAG ?= v0.2.17
+BUNDLE_IMG := $(BUNDLE_REGISTRY)/$(BUNDLE_ORG)/$(BUNDLE_NAME):$(BUNDLE_TAG)
+
 # OLMv0 Index Image Configuration (Legacy OpenShift 4.15-4.18)
-BUNDLE_IMG ?= ghcr.io/stacklok/toolhive/bundle:v0.2.17
-INDEX_OLMV0_IMG ?= ghcr.io/stacklok/toolhive/index-olmv0:v0.2.17
+# Components can be overridden independently:
+#   make index-olmv0-build INDEX_REGISTRY=quay.io INDEX_ORG=myteam
+INDEX_REGISTRY ?= ghcr.io
+INDEX_ORG ?= stacklok/toolhive
+INDEX_NAME ?= index-olmv0
+INDEX_TAG ?= v0.2.17
+INDEX_OLMV0_IMG := $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):$(INDEX_TAG)
+
+# Build tool configuration
 OPM_MODE ?= semver
 CONTAINER_TOOL ?= podman
 
@@ -87,17 +112,17 @@ catalog-validate-existing: ## Validate existing OLMv1 catalog (no rebuild needed
 
 .PHONY: catalog-build
 catalog-build: catalog-validate ## Build catalog container image
-	@echo "Building catalog container image..."
-	podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.2.17 .
-	podman tag ghcr.io/stacklok/toolhive/catalog:v0.2.17 ghcr.io/stacklok/toolhive/catalog:latest
-	@echo "✅ Catalog image built: ghcr.io/stacklok/toolhive/catalog:v0.2.17"
-	@podman images ghcr.io/stacklok/toolhive/catalog
+	@echo "Building catalog container image: $(CATALOG_IMG)"
+	$(CONTAINER_TOOL) build -f Containerfile.catalog -t $(CATALOG_IMG) .
+	$(CONTAINER_TOOL) tag $(CATALOG_IMG) $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):latest
+	@echo "✅ Catalog image built: $(CATALOG_IMG)"
+	@$(CONTAINER_TOOL) images $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME)
 
 .PHONY: catalog-push
 catalog-push: ## Push catalog image to registry
-	@echo "Pushing catalog image to ghcr.io..."
-	podman push ghcr.io/stacklok/toolhive/catalog:v0.2.17
-	podman push ghcr.io/stacklok/toolhive/catalog:latest
+	@echo "Pushing catalog image: $(CATALOG_IMG)"
+	$(CONTAINER_TOOL) push $(CATALOG_IMG)
+	$(CONTAINER_TOOL) push $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):latest
 	@echo "✅ Catalog image pushed"
 
 ##@ OLM Bundle Image Targets
@@ -110,17 +135,17 @@ bundle-validate-sdk: ## Validate OLM bundle with operator-sdk
 
 .PHONY: bundle-build
 bundle-build: bundle-validate-sdk ## Build bundle container image
-	@echo "Building bundle container image..."
-	podman build -f Containerfile.bundle -t ghcr.io/stacklok/toolhive/bundle:v0.2.17 .
-	podman tag ghcr.io/stacklok/toolhive/bundle:v0.2.17 ghcr.io/stacklok/toolhive/bundle:latest
-	@echo "✅ Bundle image built: ghcr.io/stacklok/toolhive/bundle:v0.2.17"
-	@podman images ghcr.io/stacklok/toolhive/bundle
+	@echo "Building bundle container image: $(BUNDLE_IMG)"
+	$(CONTAINER_TOOL) build -f Containerfile.bundle -t $(BUNDLE_IMG) .
+	$(CONTAINER_TOOL) tag $(BUNDLE_IMG) $(BUNDLE_REGISTRY)/$(BUNDLE_ORG)/$(BUNDLE_NAME):latest
+	@echo "✅ Bundle image built: $(BUNDLE_IMG)"
+	@$(CONTAINER_TOOL) images $(BUNDLE_REGISTRY)/$(BUNDLE_ORG)/$(BUNDLE_NAME)
 
 .PHONY: bundle-push
 bundle-push: ## Push bundle image to registry
-	@echo "Pushing bundle image to ghcr.io..."
-	podman push ghcr.io/stacklok/toolhive/bundle:v0.2.17
-	podman push ghcr.io/stacklok/toolhive/bundle:latest
+	@echo "Pushing bundle image: $(BUNDLE_IMG)"
+	$(CONTAINER_TOOL) push $(BUNDLE_IMG)
+	$(CONTAINER_TOOL) push $(BUNDLE_REGISTRY)/$(BUNDLE_ORG)/$(BUNDLE_NAME):latest
 	@echo "✅ Bundle image pushed"
 
 .PHONY: bundle-all
@@ -168,8 +193,8 @@ index-olmv0-build: ## Build OLMv0 index image (SQLite-based, deprecated)
 	@$(CONTAINER_TOOL) images $(INDEX_OLMV0_IMG)
 	@echo ""
 	@echo "Tagging as latest..."
-	$(CONTAINER_TOOL) tag $(INDEX_OLMV0_IMG) ghcr.io/stacklok/toolhive/index-olmv0:latest
-	@echo "✅ Also tagged: ghcr.io/stacklok/toolhive/index-olmv0:latest"
+	$(CONTAINER_TOOL) tag $(INDEX_OLMV0_IMG) $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):latest
+	@echo "✅ Also tagged: $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):latest"
 
 .PHONY: index-olmv0-validate
 index-olmv0-validate: ## Validate OLMv0 index image
@@ -192,12 +217,12 @@ index-olmv0-validate: ## Validate OLMv0 index image
 
 .PHONY: index-olmv0-push
 index-olmv0-push: ## Push OLMv0 index image to registry
-	@echo "Pushing OLMv0 index image to ghcr.io..."
+	@echo "Pushing OLMv0 index image: $(INDEX_OLMV0_IMG)"
 	$(CONTAINER_TOOL) push $(INDEX_OLMV0_IMG)
-	$(CONTAINER_TOOL) push ghcr.io/stacklok/toolhive/index-olmv0:latest
+	$(CONTAINER_TOOL) push $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):latest
 	@echo "✅ OLMv0 index image pushed"
 	@echo "   - $(INDEX_OLMV0_IMG)"
-	@echo "   - ghcr.io/stacklok/toolhive/index-olmv0:latest"
+	@echo "   - $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):latest"
 
 .PHONY: index-olmv0-all
 index-olmv0-all: index-olmv0-build index-olmv0-validate index-olmv0-push ## Run complete OLMv0 index workflow
@@ -281,14 +306,44 @@ clean: ## Clean generated bundle and catalog artifacts
 
 .PHONY: clean-images
 clean-images: ## Remove local catalog and index container images
-	@echo "Removing catalog and index images..."
-	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/catalog:v0.2.17
-	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/catalog:latest
-	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/index-olmv0:v0.2.17
-	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/index-olmv0:latest
-	@echo "✅ Catalog and index images removed"
+	@echo "Removing catalog, bundle, and index images..."
+	-$(CONTAINER_TOOL) rmi $(CATALOG_IMG)
+	-$(CONTAINER_TOOL) rmi $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):latest
+	-$(CONTAINER_TOOL) rmi $(BUNDLE_IMG)
+	-$(CONTAINER_TOOL) rmi $(BUNDLE_REGISTRY)/$(BUNDLE_ORG)/$(BUNDLE_NAME):latest
+	-$(CONTAINER_TOOL) rmi $(INDEX_OLMV0_IMG)
+	-$(CONTAINER_TOOL) rmi $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):latest
+	@echo "✅ Catalog, bundle, and index images removed"
 
 ##@ Documentation
+
+.PHONY: show-image-vars
+show-image-vars: ## Display effective image variable values (for debugging overrides)
+	@echo "=== Container Image Variables ==="
+	@echo ""
+	@echo "Catalog Image (OLMv1):"
+	@echo "  CATALOG_REGISTRY = $(CATALOG_REGISTRY)"
+	@echo "  CATALOG_ORG      = $(CATALOG_ORG)"
+	@echo "  CATALOG_NAME     = $(CATALOG_NAME)"
+	@echo "  CATALOG_TAG      = $(CATALOG_TAG)"
+	@echo "  CATALOG_IMG      = $(CATALOG_IMG)"
+	@echo ""
+	@echo "Bundle Image (OLMv0):"
+	@echo "  BUNDLE_REGISTRY  = $(BUNDLE_REGISTRY)"
+	@echo "  BUNDLE_ORG       = $(BUNDLE_ORG)"
+	@echo "  BUNDLE_NAME      = $(BUNDLE_NAME)"
+	@echo "  BUNDLE_TAG       = $(BUNDLE_TAG)"
+	@echo "  BUNDLE_IMG       = $(BUNDLE_IMG)"
+	@echo ""
+	@echo "Index Image (OLMv0):"
+	@echo "  INDEX_REGISTRY   = $(INDEX_REGISTRY)"
+	@echo "  INDEX_ORG        = $(INDEX_ORG)"
+	@echo "  INDEX_NAME       = $(INDEX_NAME)"
+	@echo "  INDEX_TAG        = $(INDEX_TAG)"
+	@echo "  INDEX_OLMV0_IMG  = $(INDEX_OLMV0_IMG)"
+	@echo ""
+	@echo "Override example:"
+	@echo "  make catalog-build CATALOG_REGISTRY=quay.io CATALOG_ORG=myuser"
 
 .PHONY: show-catalog
 show-catalog: ## Display catalog metadata

@@ -125,6 +125,85 @@ catalog-push: ## Push catalog image to registry
 	$(CONTAINER_TOOL) push $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):latest
 	@echo "✅ Catalog image pushed"
 
+.PHONY: catalog-inspect
+catalog-inspect: ## Inspect built catalog image contents and metadata
+	@echo "=== Catalog Image Inspection: $(CATALOG_IMG) ==="
+	@echo ""
+	@echo "--- Labels ---"
+	@$(CONTAINER_TOOL) inspect $(CATALOG_IMG) | jq -r '.[0].Config.Labels | to_entries | map(select(.key | startswith("org.opencontainers.image") or startswith("operators.operatorframework"))) | sort_by(.key) | .[] | "  \(.key) = \(.value)"'
+	@echo ""
+	@echo "--- Entrypoint & Command ---"
+	@$(CONTAINER_TOOL) inspect $(CATALOG_IMG) | jq -r '.[0].Config | "  ENTRYPOINT: \(.Entrypoint)\n  CMD: \(.Cmd)"'
+	@echo ""
+	@echo "--- Catalog Contents (/configs) ---"
+	@$(CONTAINER_TOOL) run --rm --entrypoint="" $(CATALOG_IMG) find /configs -type f
+	@echo ""
+	@echo "--- Cache Contents (/tmp/cache) ---"
+	@$(CONTAINER_TOOL) run --rm --entrypoint="" $(CATALOG_IMG) sh -c "du -sh /tmp/cache && find /tmp/cache -type f | wc -l | xargs echo '  Files:'"
+	@echo ""
+	@echo "--- Binaries ---"
+	@$(CONTAINER_TOOL) run --rm --entrypoint="" $(CATALOG_IMG) sh -c "ls -lh /bin/opm /bin/grpc_health_probe 2>/dev/null || echo '  Error: binaries not found'"
+	@echo ""
+
+.PHONY: catalog-test-local
+catalog-test-local: ## Start catalog registry-server locally for testing
+	@echo "Starting catalog registry-server locally..."
+	@echo "  Image: $(CATALOG_IMG)"
+	@echo "  Port: 50051 (gRPC)"
+	@echo ""
+	@if $(CONTAINER_TOOL) ps -a | grep -q catalog-test-local; then \
+		echo "⚠️  Removing existing catalog-test-local container..."; \
+		$(CONTAINER_TOOL) rm -f catalog-test-local; \
+	fi
+	@$(CONTAINER_TOOL) run -d -p 50051:50051 --name catalog-test-local $(CATALOG_IMG)
+	@echo ""
+	@echo "Waiting for registry-server startup..."
+	@sleep 3
+	@$(CONTAINER_TOOL) logs catalog-test-local | grep -q "serving registry" && echo "✅ Registry-server is running" || echo "⚠️  Server may not be ready yet"
+	@echo ""
+	@echo "Test commands:"
+	@echo "  grpcurl -plaintext localhost:50051 api.Registry/ListPackages"
+	@echo "  grpcurl -plaintext localhost:50051 grpc.health.v1.Health/Check"
+	@echo ""
+	@echo "View logs:"
+	@echo "  podman logs -f catalog-test-local"
+	@echo ""
+	@echo "Stop and remove:"
+	@echo "  make catalog-test-local-stop"
+	@echo ""
+
+.PHONY: catalog-test-local-stop
+catalog-test-local-stop: ## Stop and remove local catalog test container
+	@echo "Stopping catalog-test-local container..."
+	@$(CONTAINER_TOOL) stop catalog-test-local 2>/dev/null || true
+	@$(CONTAINER_TOOL) rm catalog-test-local 2>/dev/null || true
+	@echo "✅ Container removed"
+
+.PHONY: catalog-validate-executable
+catalog-validate-executable: ## Validate executable catalog image has required components
+	@echo "=== Validating Executable Catalog Image ==="
+	@echo "  Image: $(CATALOG_IMG)"
+	@echo ""
+	@echo "Checking for required binaries..."
+	@$(CONTAINER_TOOL) run --rm --entrypoint="" $(CATALOG_IMG) sh -c "test -x /bin/opm && echo '  ✅ /bin/opm present'" || (echo "  ❌ /bin/opm missing or not executable" && exit 1)
+	@$(CONTAINER_TOOL) run --rm --entrypoint="" $(CATALOG_IMG) sh -c "test -x /bin/grpc_health_probe && echo '  ✅ /bin/grpc_health_probe present'" || (echo "  ❌ /bin/grpc_health_probe missing or not executable" && exit 1)
+	@echo ""
+	@echo "Checking for catalog metadata..."
+	@$(CONTAINER_TOOL) run --rm --entrypoint="" $(CATALOG_IMG) sh -c "test -f /configs/toolhive-operator/catalog.yaml && echo '  ✅ catalog.yaml present'" || (echo "  ❌ catalog.yaml missing" && exit 1)
+	@echo ""
+	@echo "Checking for pre-built cache..."
+	@$(CONTAINER_TOOL) run --rm --entrypoint="" $(CATALOG_IMG) sh -c "test -d /tmp/cache && echo '  ✅ /tmp/cache directory exists'" || (echo "  ❌ /tmp/cache missing" && exit 1)
+	@$(CONTAINER_TOOL) run --rm --entrypoint="" $(CATALOG_IMG) sh -c "find /tmp/cache -type f | grep -q . && echo '  ✅ Cache files present'" || (echo "  ❌ Cache is empty" && exit 1)
+	@echo ""
+	@echo "Checking image configuration..."
+	@$(CONTAINER_TOOL) inspect $(CATALOG_IMG) | jq -e '.[0].Config.Entrypoint == ["/bin/opm"]' >/dev/null && echo "  ✅ ENTRYPOINT configured correctly" || (echo "  ❌ ENTRYPOINT incorrect" && exit 1)
+	@$(CONTAINER_TOOL) inspect $(CATALOG_IMG) | jq -e '.[0].Config.Cmd == ["serve", "/configs", "--cache-dir=/tmp/cache"]' >/dev/null && echo "  ✅ CMD configured correctly" || (echo "  ❌ CMD incorrect" && exit 1)
+	@echo ""
+	@echo "Checking OLM labels..."
+	@$(CONTAINER_TOOL) inspect $(CATALOG_IMG) | jq -e '.[0].Config.Labels."operators.operatorframework.io.index.configs.v1" == "/configs"' >/dev/null && echo "  ✅ OLM config label present" || (echo "  ❌ OLM config label missing or incorrect" && exit 1)
+	@echo ""
+	@echo "✅ All validation checks passed - catalog image is executable"
+
 ##@ OLM Bundle Image Targets
 
 .PHONY: bundle-validate-sdk

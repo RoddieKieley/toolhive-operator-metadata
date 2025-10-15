@@ -87,13 +87,13 @@
 
 ### Implementation for User Story 2
 
-- [ ] T027 [P] [US2] Add catalog-inspect Make target (displays image labels, entrypoint, CMD, file structure)
-- [ ] T028 [P] [US2] Add catalog-test-local Make target (starts registry-server locally with port mapping)
-- [ ] T029 [P] [US2] Add catalog-validate-executable Make target (checks for required binaries and cache)
-- [ ] T030 [US2] Document validation workflow in quickstart.md (if not already complete)
-- [ ] T031 [US2] Test catalog-inspect target (make catalog-inspect)
-- [ ] T032 [US2] Test catalog-test-local target (make catalog-test-local)
-- [ ] T033 [US2] Test catalog-validate-executable target (make catalog-validate-executable)
+- [x] T027 [P] [US2] Add catalog-inspect Make target (displays image labels, entrypoint, CMD, file structure)
+- [x] T028 [P] [US2] Add catalog-test-local Make target (starts registry-server locally with port mapping)
+- [x] T029 [P] [US2] Add catalog-validate-executable Make target (checks for required binaries and cache)
+- [x] T030 [US2] Document validation workflow in quickstart.md (if not already complete)
+- [x] T031 [US2] Test catalog-inspect target (make catalog-inspect)
+- [x] T032 [US2] Test catalog-test-local target (make catalog-test-local)
+- [x] T033 [US2] Test catalog-validate-executable target (make catalog-validate-executable)
 
 **Checkpoint**: User Story 2 complete - developers can validate catalog image locally using Make targets
 

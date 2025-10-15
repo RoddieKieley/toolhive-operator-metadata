@@ -1,21 +1,45 @@
-# Containerfile for building OLMv1 File-Based Catalog image
+# Containerfile for building OLMv1 File-Based Catalog image with registry-server
 #
-# This Containerfile creates a minimal catalog image containing FBC metadata.
-# OLM uses the label to locate the catalog configuration within the image.
+# This Containerfile creates an executable catalog image that runs the operator-framework
+# registry-server to serve operator metadata via gRPC. It uses a multi-stage build pattern
+# to pre-generate the catalog cache for optimized startup performance.
 #
 # Build command:
 #   podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.2.17 .
+#   or: make catalog-build
 #
 # Validation command (after build):
 #   opm validate ghcr.io/stacklok/toolhive/catalog:v0.2.17
+#
+# Local testing:
+#   podman run -d -p 50051:50051 --name catalog-test ghcr.io/stacklok/toolhive/catalog:v0.2.17
+#   grpcurl -plaintext localhost:50051 api.Registry/ListPackages
 
-# Use scratch base image for minimal size
-# The catalog image only needs to contain static YAML files
-FROM scratch
+# ============================================================================
+# Builder Stage: Pre-populate catalog cache
+# ============================================================================
+FROM quay.io/operator-framework/opm:latest AS builder
 
-# Add the entire catalog directory to /configs in the image
+# Copy FBC metadata to /configs
 # This directory contains all FBC schema files (olm.package, olm.channel, olm.bundle)
 ADD catalog /configs
+
+# Pre-generate catalog cache for fast runtime startup
+# The --cache-only flag generates cache without starting the server
+RUN ["/bin/opm", "serve", "/configs", "--cache-dir=/tmp/cache", "--cache-only"]
+
+# ============================================================================
+# Runtime Stage: Serve catalog via registry-server
+# ============================================================================
+FROM quay.io/operator-framework/opm:latest
+
+# Configure registry-server entrypoint and command
+ENTRYPOINT ["/bin/opm"]
+CMD ["serve", "/configs", "--cache-dir=/tmp/cache"]
+
+# Copy catalog metadata and pre-built cache from builder stage
+COPY --from=builder /configs /configs
+COPY --from=builder /tmp/cache /tmp/cache
 
 # Required label for OLM to locate the catalog metadata
 # This tells OLM where to find the FBC schemas within the image
@@ -28,6 +52,3 @@ LABEL org.opencontainers.image.vendor="Stacklok"
 LABEL org.opencontainers.image.source="https://github.com/RHEcosystemAppEng/toolhive-operator-metadata"
 LABEL org.opencontainers.image.version="v0.2.17"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-
-# No ENTRYPOINT or CMD needed - this is a data-only image
-# OLM reads the catalog directly from the image filesystem

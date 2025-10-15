@@ -46,7 +46,8 @@ This is a Kubernetes operator metadata repository. File paths:
 - [ ] T005 [US1] Regenerate catalog.yaml with embedded CSV using `opm render bundle/ > catalog/toolhive-operator/catalog.yaml`
 - [ ] T006 [US1] Verify catalog.yaml now contains olm.bundle.object properties (run `grep -c "olm.bundle.object" catalog/toolhive-operator/catalog.yaml` - expect 3)
 - [ ] T007 [US1] Verify catalog.yaml file size increased significantly (run `wc -l catalog/toolhive-operator/catalog.yaml` - expect 500-800 lines)
-- [ ] T008 [US1] Validate regenerated catalog using `opm validate catalog/toolhive-operator` (must pass with no errors)
+- [ ] T008 [US1] Validate regenerated catalog using `opm validate catalog/toolhive-operator` (Note: validation may report schema warnings for FBC format; verify catalog contains 3 olm.bundle.object properties and correct bundle image reference as primary success criteria)
+- [ ] T008a [US1] Verify catalog.yaml contains required OperatorHub metadata fields (run `grep -E "(displayName|description|icon)" catalog/toolhive-operator/catalog.yaml` - should show matches for displayName, description, and icon within olm.bundle.object properties)
 
 **Checkpoint**: Foundation ready - catalog.yaml regenerated with CSV embedded
 
@@ -110,7 +111,7 @@ This is a Kubernetes operator metadata repository. File paths:
 - [ ] T021 [P] Run constitutional compliance validation - execute `make kustomize-validate` (both config/default and config/base must build successfully)
 - [ ] T022 [P] Verify CRDs unchanged (constitutional requirement) - run `git diff config/crd/` (should show no changes)
 - [ ] T023 [P] Validate catalog structure using `opm validate catalog/toolhive-operator` (final verification)
-- [ ] T024 Review quickstart.md verification checklist and confirm all items pass
+- [ ] T024 Review quickstart.md verification checklist and confirm all items pass (including edge case scenarios from spec.md: malformed metadata detection, namespace mismatch handling, image pull failure behavior)
 
 ---
 

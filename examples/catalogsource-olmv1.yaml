@@ -1,52 +1,72 @@
----
-# CatalogSource for Toolhive Operator (OLMv1 - Modern OpenShift 4.19+)
+# CatalogSource for OLMv1 File-Based Catalog (Executable)
 #
-# This CatalogSource references a File-Based Catalog (FBC) image for modern
-# OpenShift deployments. FBC is the recommended catalog format for OLM.
-#
-# IMPORTANT: The catalog image referenced here IS the index/catalog image.
-# No additional index wrapper is needed for OLMv1 File-Based Catalogs.
-# The catalog image contains FBC metadata and can be referenced directly.
-#
-# Prerequisites:
-#   - OpenShift 4.19+ or Kubernetes with OLM v1 installed
-#   - Catalog image available: ghcr.io/stacklok/toolhive/catalog:v0.2.17
+# This CatalogSource resource deploys the executable Toolhive operator catalog
+# to a Kubernetes/OpenShift cluster. The catalog image runs the operator-framework
+# registry-server to serve operator metadata via gRPC.
 #
 # Usage:
 #   kubectl apply -f examples/catalogsource-olmv1.yaml
+#   # OR for OpenShift:
+#   oc apply -f examples/catalogsource-olmv1.yaml
 #
-# Verification:
-#   kubectl get catalogsource -n olm toolhive-catalog
-#   kubectl get packagemanifest | grep toolhive
-#   # The operator should appear in the OpenShift OperatorHub UI
+# Verify deployment:
+#   kubectl get catalogsource -n openshift-marketplace toolhive-catalog
+#   kubectl get pods -n openshift-marketplace | grep toolhive-catalog
+#   kubectl logs -n openshift-marketplace <pod-name>
 #
-# Note: For legacy OpenShift 4.15-4.18, use catalogsource-olmv0.yaml instead.
-#       SQLite-based index images (OLMv0) are deprecated but required for
-#       older OpenShift versions. This OLMv1 approach is recommended for
-#       all modern deployments.
+# Expected result:
+#   - CatalogSource status shows READY
+#   - Pod enters Running state within 10 seconds
+#   - PackageManifest created for toolhive-operator
+#   - Operator appears in OperatorHub UI
 
+---
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   name: toolhive-catalog
-  namespace: olm
+  namespace: openshift-marketplace
 spec:
-  # Source type: grpc (image-based catalog served via gRPC API)
+  # Source type for executable catalog with registry-server
   sourceType: grpc
 
-  # Catalog image: OLMv1 File-Based Catalog
-  # This image contains FBC metadata in /configs directory
-  # It IS the catalog/index image - no wrapper needed
+  # Catalog image with integrated registry-server
+  # This image runs 'opm serve /configs --cache-dir=/tmp/cache'
   image: ghcr.io/stacklok/toolhive/catalog:v0.2.17
 
-  # Display name shown in OperatorHub
+  # Display name shown in OperatorHub UI
   displayName: Toolhive Operator Catalog
 
-  # Publisher organization
+  # Publisher information
   publisher: Stacklok
 
-  # Update strategy: poll registry every 15 minutes for image updates
-  # OLM will automatically pull newer catalog images when available
+  # Update strategy - poll registry for new versions
   updateStrategy:
     registryPoll:
-      interval: 15m
+      interval: 30m  # Check for updates every 30 minutes
+
+  # Priority for catalog (higher priority = preferred)
+  # Default: 0, range: -100 to 100
+  priority: 0
+
+  # Security context for catalog pod (OpenShift)
+  # Uncomment if specific security context is needed
+  # grpcPodConfig:
+  #   securityContextConfig: restricted
+
+  # Node selector for catalog pod placement
+  # Uncomment to schedule on specific nodes
+  # grpcPodConfig:
+  #   nodeSelector:
+  #     node-role.kubernetes.io/worker: ""
+
+  # Resource requests/limits for catalog pod
+  # Uncomment to set custom resource allocation
+  # grpcPodConfig:
+  #   resources:
+  #     requests:
+  #       cpu: 100m
+  #       memory: 128Mi
+  #     limits:
+  #       cpu: 500m
+  #       memory: 256Mi

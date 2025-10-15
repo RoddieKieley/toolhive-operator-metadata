@@ -162,12 +162,12 @@
 
 **Purpose**: Finalize documentation and prepare for production use
 
-- [ ] T058 [P] [Docs] Review and update quickstart.md with any missing validation steps
-- [ ] T059 [P] [Docs] Add troubleshooting section to quickstart.md (common issues: cache corruption, port conflicts, OLM query errors)
-- [ ] T060 [P] [Docs] Document OPM version used in build (add to research.md or plan.md)
-- [ ] T061 [Docs] Create example CatalogSource YAML for cluster deployment (examples/catalogsource-olmv1.yaml)
-- [ ] T062 [Polish] Remove backup file if validation passed (rm Containerfile.catalog.backup-pre-006 or document why keeping it)
-- [ ] T063 [Polish] Clean up baseline files (rm specs/006-executable-catalog-image/*-baseline.* or keep for future reference)
+- [x] T058 [P] [Docs] Review and update quickstart.md with any missing validation steps
+- [x] T059 [P] [Docs] Add troubleshooting section to quickstart.md (common issues: cache corruption, port conflicts, OLM query errors)
+- [x] T060 [P] [Docs] Document OPM version used in build (add to research.md or plan.md)
+- [x] T061 [Docs] Create example CatalogSource YAML for cluster deployment (examples/catalogsource-olmv1.yaml)
+- [x] T062 [Polish] Remove backup file if validation passed (rm Containerfile.catalog.backup-pre-006 or document why keeping it)
+- [x] T063 [Polish] Clean up baseline files (rm specs/006-executable-catalog-image/*-baseline.* or keep for future reference)
 
 ---
 

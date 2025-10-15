@@ -68,24 +68,74 @@ Successfully tagged ghcr.io/stacklok/toolhive/catalog:v0.2.17
 
 ### Step 2: Validate the Image
 
+**Option A: Using Make Targets (Recommended)**
+
 ```bash
-# Validate catalog structure with opm
-opm validate ghcr.io/stacklok/toolhive/catalog:v0.2.17
+# Comprehensive validation of executable catalog image
+make catalog-validate-executable
+
+# Expected output:
+# ✅ /bin/opm present
+# ✅ /bin/grpc_health_probe present
+# ✅ catalog.yaml present
+# ✅ /tmp/cache directory exists
+# ✅ Cache files present
+# ✅ ENTRYPOINT configured correctly
+# ✅ CMD configured correctly
+# ✅ OLM config label present
+
+# Inspect image metadata and contents
+make catalog-inspect
+
+# Shows: labels, entrypoint, CMD, catalog files, cache size, binaries
+```
+
+**Option B: Manual Validation**
+
+```bash
+# Validate catalog structure with opm (validates source, not image)
+opm validate catalog/
 
 # Inspect image contents
-podman run --rm ghcr.io/stacklok/toolhive/catalog:v0.2.17 \
-  ls -R /configs
+podman run --rm --entrypoint="" ghcr.io/stacklok/toolhive/catalog:v0.2.17 \
+  find /configs -type f
 
 # Expected: /configs/toolhive-operator/catalog.yaml
 
 # Verify cache exists
-podman run --rm ghcr.io/stacklok/toolhive/catalog:v0.2.17 \
-  ls -la /tmp/cache
+podman run --rm --entrypoint="" ghcr.io/stacklok/toolhive/catalog:v0.2.17 \
+  sh -c "du -sh /tmp/cache && find /tmp/cache -type f | wc -l"
 
-# Expected: Cache files from builder stage
+# Expected: ~28K cache with 7 files
 ```
 
 ### Step 3: Test Registry Server Locally
+
+**Option A: Using Make Target (Recommended)**
+
+```bash
+# Start registry-server with helpful instructions
+make catalog-test-local
+
+# Expected output shows:
+#   - Container started on port 50051
+#   - Test commands (grpcurl examples)
+#   - How to view logs
+#   - How to stop the server
+
+# Test the running server
+grpcurl -plaintext localhost:50051 api.Registry/ListPackages
+
+# Expected JSON response:
+# {
+#   "name": "toolhive-operator"
+# }
+
+# Stop and remove the test server
+make catalog-test-local-stop
+```
+
+**Option B: Manual Testing**
 
 ```bash
 # Start the catalog server
@@ -94,15 +144,9 @@ podman run -d -p 50051:50051 \
   ghcr.io/stacklok/toolhive/catalog:v0.2.17
 
 # Check server logs
-podman logs -f toolhive-catalog-test
+podman logs toolhive-catalog-test
 
-# Expected: "serving registry" or similar ready message
-
-# Test health check
-grpc_health_probe -addr localhost:50051
-
-# Expected output:
-# status: SERVING
+# Expected: "serving registry" message within 1-2 seconds
 
 # Query available packages
 grpcurl -plaintext localhost:50051 api.Registry/ListPackages
@@ -493,6 +537,299 @@ oc get packagemanifest toolhive-operator
 podman stop test && podman rm test
 oc delete catalogsource <name> -n openshift-marketplace
 ```
+
+---
+
+## Troubleshooting
+
+### Issue 1: Cache Corruption or Invalid Cache
+
+**Symptoms**:
+- Build fails during cache generation step
+- Server fails to start with cache-related errors
+- Logs show "cache integrity check failed"
+
+**Solution**:
+```bash
+# Rebuild image without cache layers
+podman build -f Containerfile.catalog \
+  -t ghcr.io/stacklok/toolhive/catalog:v0.2.17 \
+  --no-cache .
+
+# OR use Make with CONTAINER_TOOL flag
+make catalog-build CONTAINER_TOOL=podman
+```
+
+**Root Cause**: Usually caused by:
+- Interrupted build during cache generation
+- Incompatible OPM version changes
+- Corrupted layer cache in podman/docker
+
+**Prevention**:
+- Always validate catalog before building: `opm validate catalog/`
+- Use specific OPM version tags instead of `:latest` for production
+
+---
+
+### Issue 2: Port 50051 Already in Use
+
+**Symptoms**:
+- `make catalog-test-local` fails with "port already allocated"
+- Cannot start catalog container
+
+**Solution**:
+```bash
+# Check what's using port 50051
+lsof -i :50051
+# OR
+ss -tulpn | grep 50051
+
+# Option A: Stop existing catalog container
+make catalog-test-local-stop
+
+# Option B: Stop other service using port 50051
+podman ps -a | grep 50051
+podman stop <container-name>
+
+# Option C: Use different port
+podman run -d -p 50052:50051 \
+  --name catalog-test \
+  ghcr.io/stacklok/toolhive/catalog:v0.2.17
+
+# Then query on different port
+grpcurl -plaintext localhost:50052 api.Registry/ListPackages
+```
+
+**Prevention**:
+- Always clean up test containers: `make catalog-test-local-stop`
+- Check for running containers before starting new ones
+
+---
+
+### Issue 3: grpcurl: "Failed to dial" or Connection Refused
+
+**Symptoms**:
+- `grpcurl -plaintext localhost:50051 api.Registry/ListPackages` fails
+- Error: "Failed to dial target host" or "connection refused"
+
+**Solution**:
+```bash
+# 1. Verify container is running
+podman ps | grep catalog
+
+# 2. Check container logs for startup errors
+podman logs catalog-test-local
+
+# Look for "serving registry" message - if missing, server didn't start
+
+# 3. Verify port mapping
+podman port catalog-test-local
+
+# Expected: 50051/tcp -> 0.0.0.0:50051
+
+# 4. If container crashed, inspect exit code
+podman inspect catalog-test-local | jq '.[0].State'
+
+# 5. Restart container if needed
+podman restart catalog-test-local
+sleep 3
+grpcurl -plaintext localhost:50051 api.Registry/ListPackages
+```
+
+**Root Causes**:
+- Server not fully started yet (wait 2-3 seconds after container start)
+- Container crashed due to invalid catalog metadata
+- Port mapping incorrect
+- Firewall blocking localhost connections
+
+**Prevention**:
+- Always check logs before querying: `podman logs catalog-test-local`
+- Use `make catalog-validate-executable` before starting server
+
+---
+
+### Issue 4: OLM Cannot Read Catalog in Cluster
+
+**Symptoms**:
+- CatalogSource pod stuck in CrashLoopBackOff
+- PackageManifest not created
+- OperatorHub shows no operators from catalog
+
+**Solution**:
+```bash
+# 1. Check CatalogSource status
+oc get catalogsource -n openshift-marketplace toolhive-catalog -o yaml
+
+# Look for status.connectionState.lastObservedState
+
+# 2. Check catalog pod logs
+oc logs -n openshift-marketplace \
+  $(oc get pods -n openshift-marketplace -l olm.catalogSource=toolhive-catalog -o name)
+
+# Common errors:
+# - "no such image": Image not pushed or wrong registry
+# - "permission denied": Registry authentication required
+# - "cache integrity failed": Rebuild image
+
+# 3. Verify image exists and is accessible
+podman pull ghcr.io/stacklok/toolhive/catalog:v0.2.17
+
+# 4. Check image pull secret if using private registry
+oc get secret -n openshift-marketplace
+
+# 5. Recreate CatalogSource with correct image
+oc delete catalogsource toolhive-catalog -n openshift-marketplace
+oc apply -f examples/catalogsource-olmv1.yaml
+```
+
+**Prevention**:
+- Test image locally before pushing: `make catalog-test-local`
+- Verify image push succeeded: `podman push ghcr.io/stacklok/toolhive/catalog:v0.2.17`
+- Use `make catalog-validate-executable` before deployment
+
+---
+
+### Issue 5: Container "Cannot Execute Binary File"
+
+**Symptoms**:
+- Container fails with "exec format error" or "cannot execute binary file"
+- Logs show architecture mismatch
+
+**Solution**:
+```bash
+# Check image architecture
+podman inspect ghcr.io/stacklok/toolhive/catalog:v0.2.17 | \
+  jq '.[0].Architecture'
+
+# Rebuild for correct architecture
+podman build -f Containerfile.catalog \
+  --platform=linux/amd64 \
+  -t ghcr.io/stacklok/toolhive/catalog:v0.2.17 .
+```
+
+**Root Cause**: Image built for different architecture (e.g., arm64 vs amd64)
+
+**Prevention**:
+- Always specify platform in production builds
+- Use multi-arch builds for broader compatibility
+
+---
+
+### Issue 6: Catalog Metadata Not Updated After Rebuild
+
+**Symptoms**:
+- Made changes to catalog.yaml but queries return old data
+- Old operator version still appears
+
+**Solution**:
+```bash
+# 1. Verify source catalog.yaml has changes
+cat catalog/toolhive-operator/catalog.yaml | grep version
+
+# 2. Force rebuild without cache
+make catalog-build CONTAINER_TOOL=podman
+# OR
+podman build -f Containerfile.catalog --no-cache \
+  -t ghcr.io/stacklok/toolhive/catalog:v0.2.17 .
+
+# 3. Stop and remove old container
+make catalog-test-local-stop
+
+# 4. Start new container
+make catalog-test-local
+
+# 5. Verify changes
+grpcurl -plaintext localhost:50051 api.Registry/ListPackages
+```
+
+**Root Cause**:
+- Layer caching reused old catalog files
+- Old container still running
+
+**Prevention**:
+- Always stop old containers before testing new builds
+- Use `make catalog-validate-executable` to verify image contents
+
+---
+
+### Issue 7: Permission Denied Errors in Logs
+
+**Symptoms**:
+- Logs show "unable to set termination log path" or "permission denied"
+- Server still works but warnings appear
+
+**Solution**:
+These warnings are **harmless** and can be ignored. They occur because:
+- Container tries to write to `/dev/termination-log` (Kubernetes-specific)
+- Not available in local podman/docker environments
+
+**No action required** - the registry-server functions correctly despite these warnings.
+
+**In Kubernetes/OpenShift**: These warnings will not appear as the platform provides the termination log path.
+
+---
+
+### Common Make Target Errors
+
+**Error**: `make: *** No rule to make target 'catalog-inspect'`
+
+**Solution**:
+```bash
+# Verify you're in the repository root
+pwd
+# Expected: .../toolhive-operator-metadata
+
+# Check Make target exists
+make help | grep catalog
+
+# If target missing, verify Makefile has the new targets
+grep "catalog-inspect" Makefile
+```
+
+**Error**: `CATALOG_IMG: command not found`
+
+**Solution**:
+```bash
+# Make variables are set - verify with:
+make show-image-vars
+
+# If not set, ensure Makefile has feature 005 variables
+grep "CATALOG_IMG" Makefile
+```
+
+---
+
+### Getting Help
+
+If issues persist:
+
+1. **Check Logs**: Always start with container logs
+   ```bash
+   podman logs catalog-test-local
+   ```
+
+2. **Validate Image**: Run comprehensive validation
+   ```bash
+   make catalog-validate-executable
+   ```
+
+3. **Inspect Image**: Check actual image contents
+   ```bash
+   make catalog-inspect
+   ```
+
+4. **Test Locally**: Verify before deploying to cluster
+   ```bash
+   make catalog-test-local
+   grpcurl -plaintext localhost:50051 api.Registry/ListPackages
+   ```
+
+5. **Clean Slate**: Remove everything and rebuild
+   ```bash
+   make catalog-test-local-stop
+   podman rmi ghcr.io/stacklok/toolhive/catalog:v0.2.17
+   make catalog-build
+   ```
 
 ---
 

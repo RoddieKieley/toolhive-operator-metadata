@@ -1,0 +1,2 @@
+8e98d1c721fc05e1a3231d9541a293bfebde72ecc2aa5fc213d620785c5bce16  /wip/src/github.com/RHEcosystemAppEng/toolhive-operator-metadata/config/crd/bases/toolhive.stacklok.dev_mcpregistries.yaml
+4856aece4c0fb8181abf5fc92c1276cb7475a0de71f7f66fbd8594f92a74ec25  /wip/src/github.com/RHEcosystemAppEng/toolhive-operator-metadata/config/crd/bases/toolhive.stacklok.dev_mcpservers.yaml

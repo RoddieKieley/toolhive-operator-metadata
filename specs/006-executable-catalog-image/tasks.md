@@ -24,10 +24,10 @@
 
 **Purpose**: Project initialization, backup, and baseline validation
 
-- [ ] T001 Create backup of current Containerfile.catalog as Containerfile.catalog.backup-pre-006
-- [ ] T002 Document baseline CRD hashes for constitution validation (sha256sum config/crd/bases/*.yaml > specs/006-executable-catalog-image/crd-hashes-baseline.txt)
-- [ ] T003 [P] Capture baseline kustomize build outputs (kustomize build config/base > specs/006-executable-catalog-image/kustomize-base-baseline.yaml && kustomize build config/default > specs/006-executable-catalog-image/kustomize-default-baseline.yaml)
-- [ ] T004 [P] Validate current catalog metadata structure (opm validate catalog/)
+- [x] T001 Create backup of current Containerfile.catalog as Containerfile.catalog.backup-pre-006
+- [x] T002 Document baseline CRD hashes for constitution validation (sha256sum config/crd/bases/*.yaml > specs/006-executable-catalog-image/crd-hashes-baseline.txt)
+- [x] T003 [P] Capture baseline kustomize build outputs (kustomize build config/base > specs/006-executable-catalog-image/kustomize-base-baseline.yaml && kustomize build config/default > specs/006-executable-catalog-image/kustomize-default-baseline.yaml)
+- [x] T004 [P] Validate current catalog metadata structure (opm validate catalog/)
 
 **Checkpoint**: Baseline captured, ready for Containerfile transformation
 
@@ -39,16 +39,16 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 [Foundation] Transform Containerfile.catalog to multi-stage build (add builder stage: FROM quay.io/operator-framework/opm:latest AS builder)
-- [ ] T006 [Foundation] Add catalog source addition to builder stage (ADD catalog /configs)
-- [ ] T007 [Foundation] Add cache pre-population command to builder stage (RUN ["/bin/opm", "serve", "/configs", "--cache-dir=/tmp/cache", "--cache-only"])
-- [ ] T008 [Foundation] Update runtime stage base image (FROM quay.io/operator-framework/opm:latest)
-- [ ] T009 [Foundation] Add artifact copy commands to runtime stage (COPY --from=builder /configs /configs && COPY --from=builder /tmp/cache /tmp/cache)
-- [ ] T010 [Foundation] Add ENTRYPOINT configuration (ENTRYPOINT ["/bin/opm"])
-- [ ] T011 [Foundation] Add CMD configuration (CMD ["serve", "/configs", "--cache-dir=/tmp/cache"])
-- [ ] T012 [Foundation] Relocate all existing labels after COPY commands (preserve all 7 labels in same order)
-- [ ] T013 [Foundation] Build the transformed catalog image (make catalog-build)
-- [ ] T014 [Foundation] Verify build succeeded and cache was generated (check build logs for "cache" messages)
+- [x] T005 [Foundation] Transform Containerfile.catalog to multi-stage build (add builder stage: FROM quay.io/operator-framework/opm:latest AS builder)
+- [x] T006 [Foundation] Add catalog source addition to builder stage (ADD catalog /configs)
+- [x] T007 [Foundation] Add cache pre-population command to builder stage (RUN ["/bin/opm", "serve", "/configs", "--cache-dir=/tmp/cache", "--cache-only"])
+- [x] T008 [Foundation] Update runtime stage base image (FROM quay.io/operator-framework/opm:latest)
+- [x] T009 [Foundation] Add artifact copy commands to runtime stage (COPY --from=builder /configs /configs && COPY --from=builder /tmp/cache /tmp/cache)
+- [x] T010 [Foundation] Add ENTRYPOINT configuration (ENTRYPOINT ["/bin/opm"])
+- [x] T011 [Foundation] Add CMD configuration (CMD ["serve", "/configs", "--cache-dir=/tmp/cache"])
+- [x] T012 [Foundation] Relocate all existing labels after COPY commands (preserve all 7 labels in same order)
+- [x] T013 [Foundation] Build the transformed catalog image (make catalog-build)
+- [x] T014 [Foundation] Verify build succeeded and cache was generated (check build logs for "cache" messages)
 
 **Checkpoint**: Foundation ready - multi-stage Containerfile.catalog builds successfully, user story validation can now begin
 
@@ -62,18 +62,18 @@
 
 ### Validation for User Story 1
 
-- [ ] T015 [US1] Inspect built catalog image metadata (podman inspect $(CATALOG_IMG) | jq '.[0].Config' to verify ENTRYPOINT and CMD)
-- [ ] T016 [P] [US1] Verify /configs directory structure in image (podman run --rm $(CATALOG_IMG) ls -R /configs)
-- [ ] T017 [P] [US1] Verify /tmp/cache directory exists in image (podman run --rm $(CATALOG_IMG) ls -R /tmp/cache)
-- [ ] T018 [P] [US1] Verify /bin/opm binary is present (podman run --rm $(CATALOG_IMG) ls -la /bin/opm)
-- [ ] T019 [P] [US1] Verify /bin/grpc_health_probe binary is present (podman run --rm $(CATALOG_IMG) ls -la /bin/grpc_health_probe)
-- [ ] T020 [US1] Run catalog container locally (podman run -d -p 50051:50051 --name catalog-test $(CATALOG_IMG))
-- [ ] T021 [US1] Verify registry-server starts successfully (podman logs catalog-test | grep -i "serving")
-- [ ] T022 [US1] Verify pod startup time is under 10 seconds (measure time from start to serving)
-- [ ] T023 [US1] Query registry-server with grpcurl (grpcurl -plaintext localhost:50051 api.Registry/ListPackages)
-- [ ] T024 [US1] Verify toolhive-operator package is returned from query
-- [ ] T025 [US1] Measure query response time is under 500ms
-- [ ] T026 [US1] Stop and remove test container (podman stop catalog-test && podman rm catalog-test)
+- [x] T015 [US1] Inspect built catalog image metadata (podman inspect $(CATALOG_IMG) | jq '.[0].Config' to verify ENTRYPOINT and CMD)
+- [x] T016 [P] [US1] Verify /configs directory structure in image (podman run --rm $(CATALOG_IMG) ls -R /configs)
+- [x] T017 [P] [US1] Verify /tmp/cache directory exists in image (podman run --rm $(CATALOG_IMG) ls -R /tmp/cache)
+- [x] T018 [P] [US1] Verify /bin/opm binary is present (podman run --rm $(CATALOG_IMG) ls -la /bin/opm)
+- [x] T019 [P] [US1] Verify /bin/grpc_health_probe binary is present (podman run --rm $(CATALOG_IMG) ls -la /bin/grpc_health_probe)
+- [x] T020 [US1] Run catalog container locally (podman run -d -p 50051:50051 --name catalog-test $(CATALOG_IMG))
+- [x] T021 [US1] Verify registry-server starts successfully (podman logs catalog-test | grep -i "serving")
+- [x] T022 [US1] Verify pod startup time is under 10 seconds (measure time from start to serving)
+- [x] T023 [US1] Query registry-server with grpcurl (grpcurl -plaintext localhost:50051 api.Registry/ListPackages)
+- [x] T024 [US1] Verify toolhive-operator package is returned from query
+- [x] T025 [US1] Measure query response time is under 500ms
+- [x] T026 [US1] Stop and remove test container (podman stop catalog-test && podman rm catalog-test)
 
 **Checkpoint**: User Story 1 complete - catalog image runs as registry-server and serves metadata with acceptable performance
 
@@ -107,15 +107,15 @@
 
 ### Validation for User Story 3
 
-- [ ] T034 [P] [US3] Verify operators.operatorframework.io.index.configs.v1 label points to /configs (podman inspect $(CATALOG_IMG) | jq -r '.[0].Config.Labels."operators.operatorframework.io.index.configs.v1"')
-- [ ] T035 [P] [US3] Verify all 7 labels are present (count labels in podman inspect output)
-- [ ] T036 [P] [US3] Compare label values against baseline (extract labels from both backup and new image, diff them)
-- [ ] T037 [US3] Verify catalog.yaml content is unchanged (extract from image, compare with catalog/toolhive-operator/catalog.yaml)
-- [ ] T038 [US3] Verify olm.package schema is preserved (check package name, defaultChannel, description, icon)
-- [ ] T039 [US3] Verify olm.channel schema is preserved (check channel name, entries)
-- [ ] T040 [US3] Verify olm.bundle schema is preserved (check bundle name, image reference, CRDs)
-- [ ] T041 [US3] Run opm validate against built image (opm validate $(CATALOG_IMG))
-- [ ] T042 [US3] Verify CRD references match expected values (MCPRegistry and MCPServer at toolhive.stacklok.dev/v1alpha1)
+- [x] T034 [P] [US3] Verify operators.operatorframework.io.index.configs.v1 label points to /configs (podman inspect $(CATALOG_IMG) | jq -r '.[0].Config.Labels."operators.operatorframework.io.index.configs.v1"')
+- [x] T035 [P] [US3] Verify all 7 labels are present (count labels in podman inspect output)
+- [x] T036 [P] [US3] Compare label values against baseline (extract labels from both backup and new image, diff them)
+- [x] T037 [US3] Verify catalog.yaml content is unchanged (extract from image, compare with catalog/toolhive-operator/catalog.yaml)
+- [x] T038 [US3] Verify olm.package schema is preserved (check package name, defaultChannel, description, icon)
+- [x] T039 [US3] Verify olm.channel schema is preserved (check channel name, entries)
+- [x] T040 [US3] Verify olm.bundle schema is preserved (check bundle name, image reference, CRDs)
+- [x] T041 [US3] Run opm validate against built image (opm validate $(CATALOG_IMG))
+- [x] T042 [US3] Verify CRD references match expected values (MCPRegistry and MCPServer at toolhive.stacklok.dev/v1alpha1)
 
 **Checkpoint**: User Story 3 complete - backward compatibility verified, all labels and metadata preserved
 
@@ -145,14 +145,14 @@
 
 **Purpose**: Verify constitutional requirements and overall feature completeness
 
-- [ ] T050 [P] [Constitution] Verify kustomize build config/base still succeeds (compare output against baseline from T003)
-- [ ] T051 [P] [Constitution] Verify kustomize build config/default still succeeds (compare output against baseline from T003)
-- [ ] T052 [P] [Constitution] Verify CRD files unchanged (sha256sum config/crd/bases/*.yaml, compare against T002 baseline)
-- [ ] T053 [Constitution] Confirm no Kubernetes manifests were modified (git status config/)
-- [ ] T054 [Final] Run complete validation workflow from quickstart.md (schema → build → local → optional cluster)
-- [ ] T055 [P] [Final] Update CLAUDE.md if needed (document Containerfile patterns, if not already updated)
-- [ ] T056 [P] [Final] Verify all success criteria from spec.md (SC-001 through SC-005)
-- [ ] T057 [Final] Clean up test containers and images (podman rm -f catalog-test, optionally prune images)
+- [x] T050 [P] [Constitution] Verify kustomize build config/base still succeeds (compare output against baseline from T003)
+- [x] T051 [P] [Constitution] Verify kustomize build config/default still succeeds (compare output against baseline from T003)
+- [x] T052 [P] [Constitution] Verify CRD files unchanged (sha256sum config/crd/bases/*.yaml, compare against T002 baseline)
+- [x] T053 [Constitution] Confirm no Kubernetes manifests were modified (git status config/)
+- [x] T054 [Final] Run complete validation workflow from quickstart.md (schema → build → local → optional cluster)
+- [x] T055 [P] [Final] Update CLAUDE.md if needed (document Containerfile patterns, if not already updated)
+- [x] T056 [P] [Final] Verify all success criteria from spec.md (SC-001 through SC-005)
+- [x] T057 [Final] Clean up test containers and images (podman rm -f catalog-test, optionally prune images)
 
 **Checkpoint**: Feature complete - all user stories validated, constitution compliant, ready for deployment
 

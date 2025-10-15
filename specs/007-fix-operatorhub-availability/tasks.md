@@ -30,10 +30,10 @@ This is a Kubernetes operator metadata repository. File paths:
 
 **Purpose**: Validate prerequisites and prepare for catalog regeneration
 
-- [ ] T001 [P] Verify opm (Operator Package Manager) is installed and functional (run `opm version`)
-- [ ] T002 [P] Verify bundle directory exists and contains CSV at `bundle/manifests/toolhive-operator.clusterserviceversion.yaml`
-- [ ] T003 [P] Verify current catalog.yaml structure by reading `catalog/toolhive-operator/catalog.yaml`
-- [ ] T004 [P] Back up current catalog.yaml to `catalog/toolhive-operator/catalog.yaml.backup-pre-007`
+- [x] T001 [P] Verify opm (Operator Package Manager) is installed and functional (run `opm version`)
+- [x] T002 [P] Verify bundle directory exists and contains CSV at `bundle/manifests/toolhive-operator.clusterserviceversion.yaml`
+- [x] T003 [P] Verify current catalog.yaml structure by reading `catalog/toolhive-operator/catalog.yaml`
+- [x] T004 [P] Back up current catalog.yaml to `catalog/toolhive-operator/catalog.yaml.backup-pre-007`
 
 ---
 

@@ -26,5 +26,5 @@ spec:
   channel: fast
   name: toolhive-operator
   source: toolhive-catalog
-  sourceNamespace: olm
+  sourceNamespace: openshift-marketplace
   installPlanApproval: Automatic

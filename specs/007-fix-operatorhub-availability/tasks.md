@@ -43,11 +43,11 @@ This is a Kubernetes operator metadata repository. File paths:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 [US1] Regenerate catalog.yaml with embedded CSV using `opm render bundle/ > catalog/toolhive-operator/catalog.yaml`
-- [ ] T006 [US1] Verify catalog.yaml now contains olm.bundle.object properties (run `grep -c "olm.bundle.object" catalog/toolhive-operator/catalog.yaml` - expect 3)
-- [ ] T007 [US1] Verify catalog.yaml file size increased significantly (run `wc -l catalog/toolhive-operator/catalog.yaml` - expect 500-800 lines)
-- [ ] T008 [US1] Validate regenerated catalog using `opm validate catalog/toolhive-operator` (Note: validation may report schema warnings for FBC format; verify catalog contains 3 olm.bundle.object properties and correct bundle image reference as primary success criteria)
-- [ ] T008a [US1] Verify catalog.yaml contains required OperatorHub metadata fields (run `grep -E "(displayName|description|icon)" catalog/toolhive-operator/catalog.yaml` - should show matches for displayName, description, and icon within olm.bundle.object properties)
+- [x] T005 [US1] Regenerate catalog.yaml with embedded CSV using `opm render bundle/ > catalog/toolhive-operator/catalog.yaml`
+- [x] T006 [US1] Verify catalog.yaml now contains olm.bundle.object properties (run `grep -c "olm.bundle.object" catalog/toolhive-operator/catalog.yaml` - expect 3)
+- [x] T007 [US1] Verify catalog.yaml file size increased significantly (run `wc -l catalog/toolhive-operator/catalog.yaml` - expect 500-800 lines)
+- [x] T008 [US1] Validate regenerated catalog using `opm validate catalog/toolhive-operator` (Note: validation may report schema warnings for FBC format; verify catalog contains 3 olm.bundle.object properties and correct bundle image reference as primary success criteria)
+- [x] T008a [US1] Verify catalog.yaml contains required OperatorHub metadata fields (run `grep -E "(displayName|description|icon)" catalog/toolhive-operator/catalog.yaml` - should show matches for displayName, description, and icon within olm.bundle.object properties)
 
 **Checkpoint**: Foundation ready - catalog.yaml regenerated with CSV embedded
 
@@ -61,13 +61,13 @@ This is a Kubernetes operator metadata repository. File paths:
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Update bundle image reference in `catalog/toolhive-operator/catalog.yaml` from `ghcr.io/stacklok/toolhive/bundle:v0.2.17` to `quay.io/roddiekieley/toolhive-operator-bundle:v0.2.17`
-- [ ] T010 [US1] Verify bundle image reference is correct (run `grep "image:" catalog/toolhive-operator/catalog.yaml | grep bundle`)
-- [ ] T011 [US1] Re-validate catalog after image update using `opm validate catalog/toolhive-operator`
-- [ ] T012 [US1] Verify kustomize builds still pass (constitutional compliance) - run `kustomize build config/default > /dev/null && kustomize build config/base > /dev/null`
-- [ ] T013 [US1] Build updated catalog container image using `podman build -f Containerfile.catalog -t quay.io/roddiekieley/toolhive-operator-catalog:v0.2.17 .`
-- [ ] T014 [US1] Test catalog image locally by running `podman run --rm -p 50051:50051 quay.io/roddiekieley/toolhive-operator-catalog:v0.2.17` and verify gRPC serves packages
-- [ ] T015 [US1] Push catalog image to registry using `podman push quay.io/roddiekieley/toolhive-operator-catalog:v0.2.17`
+- [x] T009 [US1] Update bundle image reference in `catalog/toolhive-operator/catalog.yaml` from `ghcr.io/stacklok/toolhive/bundle:v0.2.17` to `quay.io/roddiekieley/toolhive-operator-bundle:v0.2.17`
+- [x] T010 [US1] Verify bundle image reference is correct (run `grep "image:" catalog/toolhive-operator/catalog.yaml | grep bundle`)
+- [x] T011 [US1] Re-validate catalog after image update using `opm validate catalog/toolhive-operator`
+- [x] T012 [US1] Verify kustomize builds still pass (constitutional compliance) - run `kustomize build config/default > /dev/null && kustomize build config/base > /dev/null`
+- [x] T013 [US1] Build updated catalog container image using `podman build -f Containerfile.catalog -t quay.io/roddiekieley/toolhive-operator-catalog:v0.2.17 .`
+- [x] T014 [US1] Test catalog image locally by running `podman run --rm -p 50051:50051 quay.io/roddiekieley/toolhive-operator-catalog:v0.2.17` and verify gRPC serves packages
+- [ ] T015 [US1] Push catalog image to registry using `podman push quay.io/roddiekieley/toolhive-operator-catalog:v0.2.17` (MANUAL: requires registry authentication)
 
 **Checkpoint**: User Story 1 implementation complete - catalog.yaml has embedded CSV and references dev registry
 
@@ -81,9 +81,9 @@ This is a Kubernetes operator metadata repository. File paths:
 
 ### Implementation for User Story 2
 
-- [ ] T016 [P] [US2] Update catalog image reference in `examples/catalogsource-olmv1.yaml` - change `spec.image` from `ghcr.io/stacklok/toolhive/catalog:v0.2.17` to `quay.io/roddiekieley/toolhive-operator-catalog:v0.2.17`
-- [ ] T017 [P] [US2] Verify catalogsource-olmv1.yaml references correct registry (run `grep "image:" examples/catalogsource-olmv1.yaml | grep catalog`)
-- [ ] T018 [P] [US2] Verify no ghcr.io references remain in catalogsource-olmv1.yaml (run `grep "ghcr.io" examples/catalogsource-olmv1.yaml` - should return no matches)
+- [x] T016 [P] [US2] Update catalog image reference in `examples/catalogsource-olmv1.yaml` - change `spec.image` from `ghcr.io/stacklok/toolhive/catalog:v0.2.17` to `quay.io/roddiekieley/toolhive-operator-catalog:v0.2.17`
+- [x] T017 [P] [US2] Verify catalogsource-olmv1.yaml references correct registry (run `grep "image:" examples/catalogsource-olmv1.yaml | grep catalog`)
+- [x] T018 [P] [US2] Verify no ghcr.io references remain in catalogsource-olmv1.yaml (run `grep "ghcr.io" examples/catalogsource-olmv1.yaml` - should return no matches)
 
 **Checkpoint**: User Story 2 complete - example files reference development registry
 
@@ -97,8 +97,8 @@ This is a Kubernetes operator metadata repository. File paths:
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Update sourceNamespace in `examples/subscription.yaml` - change `spec.sourceNamespace` from `olm` to `openshift-marketplace`
-- [ ] T020 [US3] Verify subscription.yaml has correct sourceNamespace (run `grep "sourceNamespace:" examples/subscription.yaml`)
+- [x] T019 [US3] Update sourceNamespace in `examples/subscription.yaml` - change `spec.sourceNamespace` from `olm` to `openshift-marketplace`
+- [x] T020 [US3] Verify subscription.yaml has correct sourceNamespace (run `grep "sourceNamespace:" examples/subscription.yaml`)
 
 **Checkpoint**: User Story 3 complete - subscription example uses correct namespace
 
@@ -108,10 +108,10 @@ This is a Kubernetes operator metadata repository. File paths:
 
 **Purpose**: Comprehensive validation of all changes before deployment
 
-- [ ] T021 [P] Run constitutional compliance validation - execute `make kustomize-validate` (both config/default and config/base must build successfully)
-- [ ] T022 [P] Verify CRDs unchanged (constitutional requirement) - run `git diff config/crd/` (should show no changes)
-- [ ] T023 [P] Validate catalog structure using `opm validate catalog/toolhive-operator` (final verification)
-- [ ] T024 Review quickstart.md verification checklist and confirm all items pass (including edge case scenarios from spec.md: malformed metadata detection, namespace mismatch handling, image pull failure behavior)
+- [x] T021 [P] Run constitutional compliance validation - execute `make kustomize-validate` (both config/default and config/base must build successfully)
+- [x] T022 [P] Verify CRDs unchanged (constitutional requirement) - run `git diff config/crd/` (should show no changes)
+- [x] T023 [P] Validate catalog structure using `opm validate catalog/toolhive-operator` (final verification)
+- [x] T024 Review quickstart.md verification checklist and confirm all items pass (including edge case scenarios from spec.md: malformed metadata detection, namespace mismatch handling, image pull failure behavior)
 
 ---
 

@@ -1,28 +1,19 @@
 <!--
   Sync Impact Report
   ==================
-  Version Change: [none] → 1.0.0 (initial constitution)
+  Version Change: 1.0.0 → 1.1.0 (new principle added)
 
-  Modified Principles: N/A (initial version)
+  Modified Principles: N/A
 
   Added Sections:
-  - I. Manifest Integrity (non-negotiable)
-  - II. Kustomize-Based Customization
-  - III. CRD Immutability (non-negotiable)
-  - IV. OpenShift Compatibility
-  - V. Namespace Awareness
-  - Kustomize Build Standards
-  - OpenDataHub Integration Requirements
-  - Governance
+  - VI. OLM Catalog Multi-Bundle Support
 
-  Removed Sections: N/A (initial version)
+  Removed Sections: N/A
 
   Templates Requiring Updates:
   ✅ plan-template.md - reviewed, constitution check section aligns
   ✅ spec-template.md - reviewed, no conflicts
   ✅ tasks-template.md - reviewed, no conflicts
-  ✅ agent-file-template.md - reviewed, no conflicts
-  ✅ checklist-template.md - reviewed, no conflicts
 
   Follow-up TODOs: None
 -->
@@ -65,6 +56,17 @@ Manifests MUST explicitly handle namespace placement. The `config/default` overl
 
 **Rationale**: Namespace mismatches cause deployment failures and access control issues. Explicit namespace handling ensures resources deploy to the correct namespaces for their intended integration contexts.
 
+### VI. OLM Catalog Multi-Bundle Support
+
+A file-based catalog for the Operator Lifecycle Manager (OLM) MUST support one or more `olm.bundle` sections for each Operator package. Each `olm.bundle` section represents a specific version of an Operator and its associated metadata. While a catalog requires exactly one `olm.package` blob and at least one `olm.channel` blob for each Operator, it MUST be able to contain multiple `olm.bundle` blobs to define different versions and update paths within a channel. A bundle MAY be included as an entry in multiple `olm.channel` blobs.
+
+**Rationale**: Supporting multiple bundle versions within a single catalog enables:
+- Gradual rollout and upgrade paths for operator versions
+- Channel-based version management (stable, candidate, preview)
+- Rollback capabilities by maintaining previous bundle versions
+- Flexibility in update graph definitions for complex upgrade scenarios
+- Single catalog serving multiple release channels without duplication
+
 ## Kustomize Build Standards
 
 All kustomize manifests MUST:
@@ -104,5 +106,6 @@ When adding manifests for OpenDataHub integration, developers MUST:
 3. CRD files remain unchanged (hash/diff check)
 4. New patches are documented
 5. Namespace placement is correct for the overlay
+6. OLM catalog contains valid `olm.package`, `olm.channel`, and `olm.bundle` blobs
 
-**Version**: 1.0.0 | **Ratified**: 2025-10-07 | **Last Amended**: 2025-10-07
+**Version**: 1.1.0 | **Ratified**: 2025-10-07 | **Last Amended**: 2025-10-16

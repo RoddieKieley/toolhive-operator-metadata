@@ -1,17 +1,17 @@
 <!--
   Sync Impact Report
   ==================
-  Version Change: 1.0.0 → 1.1.0 (new principle added)
+  Version Change: 1.1.0 → 1.1.1 (governance policy expansion)
 
   Modified Principles: N/A
 
   Added Sections:
-  - VI. OLM Catalog Multi-Bundle Support
+  - Git Operations Policy (under Governance section)
 
   Removed Sections: N/A
 
   Templates Requiring Updates:
-  ✅ plan-template.md - reviewed, constitution check section aligns
+  ✅ plan-template.md - reviewed, no git-specific checks required
   ✅ spec-template.md - reviewed, no conflicts
   ✅ tasks-template.md - reviewed, no conflicts
 
@@ -100,6 +100,8 @@ When adding manifests for OpenDataHub integration, developers MUST:
 3. Update to this constitution with version bump
 4. Migration plan if existing manifests require changes
 
+**Git Operations Policy**: Git operations that modify the repository state are PROHIBITED during automated processes, constitutional updates, and development workflows unless explicitly requested by a human operator. Read-only git operations (status, log, diff, show, branch listing) are permitted for informational purposes. Write operations (commit, push, merge, rebase, tag, config changes) MUST only be performed through explicit human-initiated actions.
+
 **Compliance Verification**: All pull requests MUST verify:
 1. `kustomize build config/base` succeeds
 2. `kustomize build config/default` succeeds
@@ -108,4 +110,4 @@ When adding manifests for OpenDataHub integration, developers MUST:
 5. Namespace placement is correct for the overlay
 6. OLM catalog contains valid `olm.package`, `olm.channel`, and `olm.bundle` blobs
 
-**Version**: 1.1.0 | **Ratified**: 2025-10-07 | **Last Amended**: 2025-10-16
+**Version**: 1.1.1 | **Ratified**: 2025-10-07 | **Last Amended**: 2025-10-16

@@ -10,7 +10,24 @@ Fixed security context configuration in ToolHive Operator manifests to ensure co
 
 ## Changes Made
 
-### 1. Enhanced Security Context Patches (`config/base/openshift_sec_patches.yaml`)
+### 1. Fixed Bundle Generation (`Makefile`)
+
+**Updated `bundle` target** to properly generate the OLM bundle directory structure:
+
+- Creates `bundle/manifests/` and `bundle/metadata/` directories
+- Copies CRDs and CSV from `downloaded/toolhive-operator/0.2.17/`
+- Generates proper `annotations.yaml` with correct YAML format:
+  - Fixed to use `annotations:` as root key (not literal text "annotations.yaml")
+  - Properly indented nested fields with 2-space indentation
+  - Validates successfully with `operator-sdk bundle validate`
+- Fixes issue where `make clean` removed bundle but `make bundle` couldn't regenerate it
+
+**Validation**:
+- ✅ `make bundle` generates proper structure
+- ✅ `make bundle-validate` passes (manual checks)
+- ✅ `make bundle-validate-sdk` passes (operator-sdk validation)
+
+### 2. Enhanced Security Context Patches (`config/base/openshift_sec_patches.yaml`)
 
 **Added documentation comments** explaining the purpose and requirements of each patch:
 
@@ -19,7 +36,7 @@ Fixed security context configuration in ToolHive Operator manifests to ensure co
 
 **No functional changes** - patches were already correctly configured, only added inline documentation.
 
-### 2. Updated README.md
+### 3. Updated README.md
 
 Added comprehensive OpenShift compatibility documentation:
 
@@ -109,11 +126,15 @@ All principles from `.specify/memory/constitution.md` satisfied:
 
 ## Files Modified
 
-1. **`config/base/openshift_sec_patches.yaml`**
+1. **`Makefile`**
+   - Fixed `bundle` target to regenerate bundle from downloaded files
+   - Added proper directory creation and metadata generation
+
+2. **`config/base/openshift_sec_patches.yaml`**
    - Added inline documentation comments
    - No functional changes
 
-2. **`README.md`**
+3. **`README.md`**
    - Added OpenShift compatibility section
    - Updated prerequisites
    - Documented security context configuration

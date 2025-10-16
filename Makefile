@@ -14,10 +14,10 @@ CATALOG_IMG := $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):$(CATALOG_TAG)
 
 # OLMv0 Bundle Image Configuration
 # Components can be overridden independently:
-#   make bundle-build BUNDLE_REGISTRY=quay.io BUNDLE_TAG=dev
-BUNDLE_REGISTRY ?= ghcr.io
-BUNDLE_ORG ?= stacklok/toolhive
-BUNDLE_NAME ?= bundle
+#   make bundle-build BUNDLE_REGISTRY=ghcr.io BUNDLE_ORG=stacklok/toolhive BUNDLE_TAG=dev
+BUNDLE_REGISTRY ?= quay.io
+BUNDLE_ORG ?= roddiekieley
+BUNDLE_NAME ?= toolhive-operator-catalog
 BUNDLE_TAG ?= v0.2.17
 BUNDLE_IMG := $(BUNDLE_REGISTRY)/$(BUNDLE_ORG)/$(BUNDLE_NAME):$(BUNDLE_TAG)
 
@@ -61,9 +61,26 @@ kustomize-validate: ## Validate both kustomize builds (constitution compliance)
 
 .PHONY: bundle
 bundle: ## Generate OLM bundle (CSV, CRDs, metadata)
-	@echo "OLM bundle already generated in bundle/ directory"
-	@echo "Contents:"
-	@ls -lh bundle/manifests/ bundle/metadata/
+	@echo "Generating OLM bundle from downloaded operator files..."
+	@mkdir -p bundle/manifests bundle/metadata
+	@if [ -d "downloaded/toolhive-operator/0.2.17" ]; then \
+		echo "Copying manifests from downloaded/toolhive-operator/0.2.17/..."; \
+		cp downloaded/toolhive-operator/0.2.17/*.yaml bundle/manifests/; \
+		echo "annotations:" > bundle/metadata/annotations.yaml; \
+		echo "  operators.operatorframework.io.bundle.mediatype.v1: registry+v1" >> bundle/metadata/annotations.yaml; \
+		echo "  operators.operatorframework.io.bundle.manifests.v1: manifests/" >> bundle/metadata/annotations.yaml; \
+		echo "  operators.operatorframework.io.bundle.metadata.v1: metadata/" >> bundle/metadata/annotations.yaml; \
+		echo "  operators.operatorframework.io.bundle.package.v1: toolhive-operator" >> bundle/metadata/annotations.yaml; \
+		echo "  operators.operatorframework.io.bundle.channels.v1: fast" >> bundle/metadata/annotations.yaml; \
+		echo "  operators.operatorframework.io.bundle.channel.default.v1: fast" >> bundle/metadata/annotations.yaml; \
+		echo "✅ Bundle generated successfully"; \
+		echo "Contents:"; \
+		ls -lh bundle/manifests/ bundle/metadata/; \
+	else \
+		echo "❌ Error: downloaded/toolhive-operator/0.2.17/ directory not found"; \
+		echo "Run download script first or check directory structure"; \
+		exit 1; \
+	fi
 
 .PHONY: bundle-validate
 bundle-validate: ## Validate OLM bundle with operator-sdk
@@ -91,8 +108,40 @@ bundle-validate: ## Validate OLM bundle with operator-sdk
 # For legacy OpenShift 4.15-4.18, see "OLM Index Targets (OLMv0)" below.
 
 .PHONY: catalog
-catalog: ## Generate FBC catalog metadata
-	@echo "FBC catalog already generated in catalog/ directory"
+catalog: bundle ## Generate FBC catalog metadata from bundle
+	@echo "Generating FBC catalog from bundle..."
+	@mkdir -p catalog/toolhive-operator
+	@echo "---" > catalog/toolhive-operator/catalog.yaml
+	@echo "# Package Schema - defines the toolhive-operator package" >> catalog/toolhive-operator/catalog.yaml
+	@echo "schema: olm.package" >> catalog/toolhive-operator/catalog.yaml
+	@echo "name: toolhive-operator" >> catalog/toolhive-operator/catalog.yaml
+	@echo "defaultChannel: fast" >> catalog/toolhive-operator/catalog.yaml
+	@echo "description: |" >> catalog/toolhive-operator/catalog.yaml
+	@echo "  Toolhive Operator manages Model Context Protocol (MCP) servers and registries." >> catalog/toolhive-operator/catalog.yaml
+	@echo "" >> catalog/toolhive-operator/catalog.yaml
+	@echo "  The operator provides custom resources for:" >> catalog/toolhive-operator/catalog.yaml
+	@echo "  - MCPRegistry: Manages registries of MCP server definitions" >> catalog/toolhive-operator/catalog.yaml
+	@echo "  - MCPServer: Manages individual MCP server instances" >> catalog/toolhive-operator/catalog.yaml
+	@echo "" >> catalog/toolhive-operator/catalog.yaml
+	@echo "  MCP enables AI assistants to securely access external tools and data sources." >> catalog/toolhive-operator/catalog.yaml
+	@echo "icon:" >> catalog/toolhive-operator/catalog.yaml
+	@echo "  base64data: PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzAwN2ZmZiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI1NiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPk08L3RleHQ+Cjwvc3ZnPg==" >> catalog/toolhive-operator/catalog.yaml
+	@echo "  mediatype: image/svg+xml" >> catalog/toolhive-operator/catalog.yaml
+	@echo "" >> catalog/toolhive-operator/catalog.yaml
+	@echo "---" >> catalog/toolhive-operator/catalog.yaml
+	@echo "# Channel Schema - defines the fast release channel" >> catalog/toolhive-operator/catalog.yaml
+	@echo "schema: olm.channel" >> catalog/toolhive-operator/catalog.yaml
+	@echo "name: fast" >> catalog/toolhive-operator/catalog.yaml
+	@echo "package: toolhive-operator" >> catalog/toolhive-operator/catalog.yaml
+	@echo "entries:" >> catalog/toolhive-operator/catalog.yaml
+	@echo "  - name: toolhive-operator.v0.2.17" >> catalog/toolhive-operator/catalog.yaml
+	@echo "    # Initial release - no replaces/skips" >> catalog/toolhive-operator/catalog.yaml
+	@echo "" >> catalog/toolhive-operator/catalog.yaml
+	@echo "---" >> catalog/toolhive-operator/catalog.yaml
+	@echo "# Bundle Schema - generated by opm render with embedded bundle objects" >> catalog/toolhive-operator/catalog.yaml
+	@echo "# Note: image field removed - using embedded olm.bundle.object data only" >> catalog/toolhive-operator/catalog.yaml
+	@opm render bundle/ -o yaml | sed '1d' | sed '/^image:/d' >> catalog/toolhive-operator/catalog.yaml
+	@echo "✅ Catalog generated successfully with embedded bundle objects (no image reference)"
 	@echo "Contents:"
 	@ls -lh catalog/toolhive-operator/
 

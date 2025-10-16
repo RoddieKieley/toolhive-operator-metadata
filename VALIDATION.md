@@ -114,7 +114,7 @@ podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.2.
 ## Referential Integrity Validation
 
 All cross-references verified ✅:
-- `olm.package.defaultChannel` → `olm.channel.name` ("stable")
+- `olm.package.defaultChannel` → `olm.channel.name` ("fast")
 - `olm.channel.package` → `olm.package.name` ("toolhive-operator")
 - `olm.channel.entries[0].name` → `olm.bundle.name` ("toolhive-operator.v0.2.17")
 - `olm.bundle.package` → `olm.package.name` ("toolhive-operator")
@@ -218,7 +218,7 @@ The bundle and catalog are **ready for distribution** and deployment to OLMv1-en
      name: toolhive-operator
      namespace: operators
    spec:
-     channel: stable
+     channel: fast
      name: toolhive-operator
      source: toolhive-catalog
      sourceNamespace: olm

@@ -1,0 +1,227 @@
+# Contract: Security Context Schema
+# Feature: Fix Security Context for OpenShift Compatibility
+# Purpose: Define the required security context structure for OpenShift compliance
+
+---
+# Pod Security Context Schema (spec.template.spec.securityContext)
+
+podSecurityContext:
+  type: object
+  required:
+    - runAsNonRoot
+    - seccompProfile
+  properties:
+    runAsNonRoot:
+      type: boolean
+      const: true
+      description: "Pod must run as non-root user. Required by restricted-v2 SCC."
+
+    seccompProfile:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum:
+            - RuntimeDefault
+            - Localhost
+          const: RuntimeDefault
+          description: "Seccomp profile type. RuntimeDefault required for OpenShift."
+      description: "Seccomp profile configuration. Required by restricted-v2 SCC."
+
+    runAsUser:
+      type: "null"
+      description: "MUST BE ABSENT. OpenShift assigns UID dynamically from namespace range."
+
+    runAsGroup:
+      type: "null"
+      description: "SHOULD BE ABSENT. OpenShift assigns GID dynamically."
+
+    fsGroup:
+      type: integer
+      description: "Optional. File system group ID for volumes."
+
+  additionalProperties: true
+  description: "Pod-level security settings that apply to all containers"
+
+---
+# Container Security Context Schema (spec.template.spec.containers[].securityContext)
+
+containerSecurityContext:
+  type: object
+  required:
+    - runAsNonRoot
+    - allowPrivilegeEscalation
+    - readOnlyRootFilesystem
+    - capabilities
+  properties:
+    runAsNonRoot:
+      type: boolean
+      const: true
+      description: "Container must run as non-root. Reinforces pod-level setting."
+
+    allowPrivilegeEscalation:
+      type: boolean
+      const: false
+      description: "Prevent privilege escalation. Required by restricted-v2 SCC."
+
+    readOnlyRootFilesystem:
+      type: boolean
+      const: true
+      description: "Make root filesystem read-only. Required for security hardening."
+
+    capabilities:
+      type: object
+      required:
+        - drop
+      properties:
+        drop:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          contains:
+            const: "ALL"
+          description: "Must include 'ALL' to drop all Linux capabilities"
+      description: "Linux capabilities configuration. Must drop ALL for restricted-v2."
+
+    runAsUser:
+      type: "null"
+      description: "MUST BE ABSENT. OpenShift assigns UID dynamically from namespace range."
+
+    runAsGroup:
+      type: "null"
+      description: "SHOULD BE ABSENT. OpenShift assigns GID dynamically."
+
+    privileged:
+      type: boolean
+      const: false
+      description: "Must be false if present. Privileged containers not allowed."
+
+  additionalProperties: false
+  description: "Container-level security settings that can override pod settings"
+
+---
+# Complete Example (Expected Output)
+
+completeExample:
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: controller-manager
+  spec:
+    template:
+      spec:
+        # Pod-level security context
+        securityContext:
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+          # runAsUser: MUST BE ABSENT
+          # runAsGroup: SHOULD BE ABSENT
+
+        containers:
+        - name: manager
+          image: ghcr.io/stacklok/toolhive/operator:v0.2.17
+          # Container-level security context
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+              - ALL
+            # runAsUser: MUST BE ABSENT
+            # runAsGroup: SHOULD BE ABSENT
+
+---
+# OpenShift Restricted-v2 SCC Compatibility Matrix
+
+sccCompatibility:
+  restrictedV2Requirements:
+    runAsUser:
+      strategy: MustRunAsRange
+      enforcement: "Must be absent; OpenShift assigns from namespace UID range"
+      violation: "Specifying runAsUser causes pod admission failure"
+
+    runAsNonRoot:
+      strategy: MustRunAsNonRoot
+      enforcement: "Must be true at both pod and container level"
+      violation: "Setting to false or omitting causes admission failure"
+
+    seccompProfile:
+      strategy: RuntimeDefault
+      enforcement: "Must be RuntimeDefault or Localhost"
+      violation: "Omitting or using Unconfined causes admission failure"
+
+    allowPrivilegeEscalation:
+      strategy: MustBeFalse
+      enforcement: "Must be explicitly set to false"
+      violation: "Setting to true or omitting causes admission failure"
+
+    capabilities:
+      strategy: DropAll
+      enforcement: "Must drop ALL capabilities"
+      violation: "Adding capabilities or not dropping ALL causes admission failure"
+
+    readOnlyRootFilesystem:
+      strategy: Recommended
+      enforcement: "Should be true for security hardening"
+      violation: "Not enforced but strongly recommended"
+
+---
+# Validation Rules
+
+validationRules:
+  - rule: "runAsUser field must be absent"
+    check: ".spec.template.spec.containers[].securityContext | has('runAsUser') | not"
+    severity: CRITICAL
+    reason: "Violates OpenShift restricted-v2 SCC MustRunAsRange strategy"
+
+  - rule: "runAsNonRoot must be true at pod level"
+    check: ".spec.template.spec.securityContext.runAsNonRoot == true"
+    severity: CRITICAL
+    reason: "Required by restricted-v2 SCC MustRunAsNonRoot strategy"
+
+  - rule: "runAsNonRoot must be true at container level"
+    check: ".spec.template.spec.containers[].securityContext.runAsNonRoot == true"
+    severity: CRITICAL
+    reason: "Required by restricted-v2 SCC MustRunAsNonRoot strategy"
+
+  - rule: "seccompProfile must be RuntimeDefault"
+    check: ".spec.template.spec.securityContext.seccompProfile.type == 'RuntimeDefault'"
+    severity: CRITICAL
+    reason: "Required by restricted-v2 SCC seccomp strategy"
+
+  - rule: "allowPrivilegeEscalation must be false"
+    check: ".spec.template.spec.containers[].securityContext.allowPrivilegeEscalation == false"
+    severity: CRITICAL
+    reason: "Required by restricted-v2 SCC privilege escalation strategy"
+
+  - rule: "readOnlyRootFilesystem should be true"
+    check: ".spec.template.spec.containers[].securityContext.readOnlyRootFilesystem == true"
+    severity: HIGH
+    reason: "Security best practice for immutable containers"
+
+  - rule: "capabilities must drop ALL"
+    check: ".spec.template.spec.containers[].securityContext.capabilities.drop | contains(['ALL'])"
+    severity: CRITICAL
+    reason: "Required by restricted-v2 SCC capabilities strategy"
+
+---
+# References
+
+references:
+  - name: "OpenShift Security Context Constraints"
+    url: "https://docs.openshift.com/container-platform/latest/authentication/managing-security-context-constraints.html"
+
+  - name: "Kubernetes Pod Security Standards"
+    url: "https://kubernetes.io/docs/concepts/security/pod-security-standards/"
+
+  - name: "ToolHive Helm Chart OpenShift Values"
+    url: "https://github.com/RoddieKieley/toolhive/blob/main/deploy/charts/operator/values-openshift.yaml"
+    lines: "43-56"
+
+  - name: "Kustomize JSON Patches"
+    url: "https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/patchesjson6902/"

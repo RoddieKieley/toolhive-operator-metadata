@@ -1,0 +1,137 @@
+# Contract: Kustomize Security Context Patches
+# Feature: Fix Security Context for OpenShift Compatibility
+# Target: config/base/openshift_sec_patches.yaml
+
+---
+# Contract Definition: JSON Patch Operations for Security Context
+#
+# This contract defines the required kustomize JSON patch operations to ensure
+# the ToolHive Operator deployment complies with OpenShift restricted-v2 SCC.
+
+# Patch 1: Add seccompProfile to Pod Security Context
+# Purpose: Enable RuntimeDefault seccomp profile as required by restricted-v2 SCC
+# Status: ALREADY EXISTS (verify application)
+- op: add
+  path: /spec/template/spec/securityContext/seccompProfile
+  value:
+    type: RuntimeDefault
+
+# Patch 2: Remove runAsUser from Container Security Context
+# Purpose: Allow OpenShift to dynamically assign UID from namespace range
+# Status: ALREADY EXISTS (verify application)
+# CRITICAL: This field MUST be removed, not set to a different value
+- op: remove
+  path: /spec/template/spec/containers/0/securityContext/runAsUser
+
+# Additional patches that MAY be needed if upstream changes:
+# (Currently these fields are already correctly set in config/manager/manager.yaml)
+
+# Conditional Patch 3: Ensure runAsNonRoot at Pod Level
+# Only needed if upstream removes this field
+# - op: add
+#   path: /spec/template/spec/securityContext/runAsNonRoot
+#   value: true
+
+# Conditional Patch 4: Ensure runAsNonRoot at Container Level
+# Only needed if upstream removes this field
+# - op: add
+#   path: /spec/template/spec/containers/0/securityContext/runAsNonRoot
+#   value: true
+
+# Conditional Patch 5: Ensure allowPrivilegeEscalation is false
+# Only needed if upstream changes this
+# - op: replace
+#   path: /spec/template/spec/containers/0/securityContext/allowPrivilegeEscalation
+#   value: false
+
+# Conditional Patch 6: Ensure readOnlyRootFilesystem is true
+# Only needed if upstream changes this
+# - op: replace
+#   path: /spec/template/spec/containers/0/securityContext/readOnlyRootFilesystem
+#   value: true
+
+# Conditional Patch 7: Ensure capabilities drop ALL
+# Only needed if upstream changes this
+# - op: replace
+#   path: /spec/template/spec/containers/0/securityContext/capabilities/drop
+#   value:
+#     - ALL
+
+---
+# Contract Validation Rules
+
+# Rule 1: Patch Target Must Exist
+# - Target: apps/v1/Deployment/controller-manager
+# - Source: config/manager/manager.yaml
+# - Verification: kustomize build must succeed
+
+# Rule 2: Patch Paths Must Be Valid
+# - Container index [0] must exist (manager container)
+# - Security context blocks must exist before adding nested fields
+# - Fields being removed must exist in source manifest
+
+# Rule 3: Output Must Comply with Restricted-v2 SCC
+# - Output MUST NOT contain: spec.template.spec.containers[*].securityContext.runAsUser
+# - Output MUST contain: spec.template.spec.securityContext.seccompProfile.type = RuntimeDefault
+# - Output MUST contain: spec.template.spec.securityContext.runAsNonRoot = true
+# - Output MUST contain: spec.template.spec.containers[0].securityContext.runAsNonRoot = true
+# - Output MUST contain: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation = false
+# - Output MUST contain: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem = true
+# - Output MUST contain: spec.template.spec.containers[0].securityContext.capabilities.drop = [ALL]
+
+# Rule 4: Patch Application Order
+# - Patches execute in order defined in file
+# - Remove operations should come after any add operations that might conflict
+# - Current order (add seccompProfile, remove runAsUser) is correct
+
+---
+# Kustomization.yaml Integration Contract
+
+# The patches above must be referenced in config/base/kustomization.yaml:
+
+# patches:
+# - path: openshift_sec_patches.yaml
+#   target:
+#     group: apps
+#     version: v1
+#     kind: Deployment
+#     name: controller-manager
+
+# OR (older kustomize syntax):
+
+# patchesJson6902:
+# - target:
+#     group: apps
+#     version: v1
+#     kind: Deployment
+#     name: controller-manager
+#   path: openshift_sec_patches.yaml
+
+---
+# Testing Contract
+
+# Test 1: Kustomize Build Success
+# Command: kustomize build config/base
+# Expected: Exit code 0, no errors
+
+# Test 2: RunAsUser Absent in Output
+# Command: kustomize build config/base | yq '.spec.template.spec.containers[0].securityContext.runAsUser'
+# Expected: null (field absent)
+
+# Test 3: SecurityContext Fields Present
+# Commands:
+#   kustomize build config/base | yq '.spec.template.spec.securityContext.runAsNonRoot'
+#   # Expected: true
+#
+#   kustomize build config/base | yq '.spec.template.spec.securityContext.seccompProfile.type'
+#   # Expected: "RuntimeDefault"
+#
+#   kustomize build config/base | yq '.spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation'
+#   # Expected: false
+#
+#   kustomize build config/base | yq '.spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem'
+#   # Expected: true
+
+# Test 4: OpenShift Deployment
+# Command: oc apply -k config/base && oc wait --for=condition=Ready pod -l control-plane=controller-manager
+# Expected: Pod enters Running state, no security violation events

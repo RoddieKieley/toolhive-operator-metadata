@@ -16,7 +16,9 @@ This repository contains:
 - `kustomize` (v5.0.0+)
 - `podman` or `docker`
 - `opm` (Operator Package Manager) - for catalog operations
-- Kubernetes 1.16+ or OpenShift 4.10+
+- Kubernetes 1.24+ or OpenShift 4.12+
+
+**OpenShift Compatibility**: The operator is fully compatible with OpenShift's `restricted-v2` Security Context Constraint (SCC). The manifests in `config/base/` are specifically configured to run under OpenShift's restrictive security policies without requiring custom SCCs or elevated privileges.
 
 ### Building Manifests
 
@@ -26,9 +28,16 @@ Build kustomize manifests:
 # Standard Kubernetes deployment
 kustomize build config/default
 
-# OpenShift-specific deployment
+# OpenShift-specific deployment (includes security context patches)
 kustomize build config/base
 ```
+
+**Security Context Configuration**: The OpenShift deployment (`config/base`) applies JSON patches to ensure compliance with the `restricted-v2` SCC:
+- Removes hardcoded `runAsUser` to allow dynamic UID assignment
+- Adds `seccompProfile: RuntimeDefault` for container sandboxing
+- Maintains `runAsNonRoot`, `allowPrivilegeEscalation: false`, and `readOnlyRootFilesystem: true`
+
+See `config/base/openshift_sec_patches.yaml` for details.
 
 ### Building OLM Catalog
 

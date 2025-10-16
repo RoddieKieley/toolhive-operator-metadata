@@ -1,7 +1,14 @@
+# Add seccompProfile to pod security context
+# Required by OpenShift restricted-v2 SCC
+# Sets seccomp profile to RuntimeDefault for container sandboxing
 - op: add
   path: /spec/template/spec/securityContext/seccompProfile
   value:
     type: RuntimeDefault
 
+# Remove hardcoded runAsUser from container security context
+# Required by OpenShift restricted-v2 SCC which uses MustRunAsRange strategy
+# OpenShift will dynamically assign a UID from the namespace's UID range
+# Hardcoded runAsUser: 1000 violates this policy and prevents pod startup
 - op: remove
   path: /spec/template/spec/containers/0/securityContext/runAsUser

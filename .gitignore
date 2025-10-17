@@ -8,6 +8,11 @@ bundle/
 bundle.Dockerfile
 catalog/toolhive-operator/catalog.yaml
 
+# Icon processing temporary files
+*_icon_meta.tmp
+bundle_icon_meta.tmp
+catalog_icon_meta.tmp
+
 # Common IDE files
 .idea/
 .vscode/

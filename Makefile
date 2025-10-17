@@ -40,6 +40,16 @@ help: ## Display this help message
 	@echo ""
 	@awk 'BEGIN {FS = ":.*##"; printf "\033[36m%-30s\033[0m %s\n", "Target", "Description"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "\033[36m%-30s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
+.PHONY: check-icon-deps
+check-icon-deps: ## Check icon processing script dependencies
+	@echo "Checking icon processing dependencies..."
+	@command -v file >/dev/null 2>&1 || { echo "❌ Error: 'file' command not found (required for icon validation)"; exit 1; }
+	@command -v identify >/dev/null 2>&1 || { echo "❌ Error: ImageMagick 'identify' command not found (install imagemagick package)"; exit 1; }
+	@command -v bc >/dev/null 2>&1 || { echo "❌ Error: 'bc' command not found (install bc package)"; exit 1; }
+	@test -x scripts/encode-icon.sh || { echo "❌ Error: scripts/encode-icon.sh not executable"; exit 1; }
+	@test -x scripts/validate-icon.sh || { echo "❌ Error: scripts/validate-icon.sh not executable"; exit 1; }
+	@echo "✅ All icon processing dependencies present"
+
 ##@ Kustomize Targets
 
 .PHONY: kustomize-build-default
@@ -76,6 +86,25 @@ bundle: ## Generate OLM bundle (CSV, CRDs, metadata) with OpenShift security pat
 		echo "  ✓ Added seccompProfile: RuntimeDefault to pod securityContext"; \
 		echo "  ✓ Removed explicit command field (using container ENTRYPOINT)"; \
 		echo "  ✓ Added leader election RBAC permissions (configmaps, leases, events)"; \
+		if [ -n "$(BUNDLE_ICON)" ]; then \
+			echo "Validating custom icon: $(BUNDLE_ICON)"; \
+			scripts/validate-icon.sh "$(BUNDLE_ICON)" || exit 1; \
+			echo "  ✓ Icon validation passed"; \
+			echo "Encoding custom bundle icon: $(BUNDLE_ICON)"; \
+			ENCODED=$$(scripts/encode-icon.sh "$(BUNDLE_ICON)" 2>bundle_icon_meta.tmp) || exit 1; \
+			MEDIATYPE=$$(grep "^MEDIATYPE:" bundle_icon_meta.tmp | cut -d: -f2); \
+			yq eval '.spec.icon = [{"base64data": "'"$$ENCODED"'", "mediatype": "'"$$MEDIATYPE"'"}]' \
+			  -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml || exit 1; \
+			rm -f bundle_icon_meta.tmp; \
+			echo "  ✓ Custom icon encoded and injected"; \
+		else \
+			echo "Using default icon from icons/default-icon.svg"; \
+			ENCODED=$$(scripts/encode-icon.sh "icons/default-icon.svg" 2>bundle_icon_meta.tmp) || exit 1; \
+			MEDIATYPE=$$(grep "^MEDIATYPE:" bundle_icon_meta.tmp | cut -d: -f2); \
+			yq eval '.spec.icon = [{"base64data": "'"$$ENCODED"'", "mediatype": "'"$$MEDIATYPE"'"}]' \
+			  -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml || exit 1; \
+			rm -f bundle_icon_meta.tmp; \
+		fi; \
 		echo "annotations:" > bundle/metadata/annotations.yaml; \
 		echo "  operators.operatorframework.io.bundle.mediatype.v1: registry+v1" >> bundle/metadata/annotations.yaml; \
 		echo "  operators.operatorframework.io.bundle.manifests.v1: manifests/" >> bundle/metadata/annotations.yaml; \
@@ -134,9 +163,23 @@ catalog: bundle ## Generate FBC catalog metadata from bundle
 	@echo "  - MCPServer: Manages individual MCP server instances" >> catalog/toolhive-operator/catalog.yaml
 	@echo "" >> catalog/toolhive-operator/catalog.yaml
 	@echo "  MCP enables AI assistants to securely access external tools and data sources." >> catalog/toolhive-operator/catalog.yaml
-	@echo "icon:" >> catalog/toolhive-operator/catalog.yaml
-	@echo "  base64data: PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzAwN2ZmZiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI1NiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPk08L3RleHQ+Cjwvc3ZnPg==" >> catalog/toolhive-operator/catalog.yaml
-	@echo "  mediatype: image/svg+xml" >> catalog/toolhive-operator/catalog.yaml
+	@if [ -n "$(CATALOG_ICON)" ]; then \
+		echo "Validating custom catalog icon: $(CATALOG_ICON)"; \
+		scripts/validate-icon.sh "$(CATALOG_ICON)" || exit 1; \
+		echo "  ✓ Catalog icon validation passed"; \
+		echo "Encoding custom catalog icon: $(CATALOG_ICON)"; \
+		ENCODED=$$(scripts/encode-icon.sh "$(CATALOG_ICON)" 2>catalog_icon_meta.tmp) || exit 1; \
+		MEDIATYPE=$$(grep "^MEDIATYPE:" catalog_icon_meta.tmp | cut -d: -f2); \
+		echo "icon:" >> catalog/toolhive-operator/catalog.yaml; \
+		echo "  base64data: $$ENCODED" >> catalog/toolhive-operator/catalog.yaml; \
+		echo "  mediatype: $$MEDIATYPE" >> catalog/toolhive-operator/catalog.yaml; \
+		rm -f catalog_icon_meta.tmp; \
+		echo "  ✓ Custom catalog icon encoded and injected"; \
+	else \
+		echo "icon:" >> catalog/toolhive-operator/catalog.yaml; \
+		echo "  base64data: PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzAwN2ZmZiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI1NiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPk08L3RleHQ+Cjwvc3ZnPg==" >> catalog/toolhive-operator/catalog.yaml; \
+		echo "  mediatype: image/svg+xml" >> catalog/toolhive-operator/catalog.yaml; \
+	fi
 	@echo "" >> catalog/toolhive-operator/catalog.yaml
 	@echo "---" >> catalog/toolhive-operator/catalog.yaml
 	@echo "# Channel Schema - defines the fast release channel" >> catalog/toolhive-operator/catalog.yaml
@@ -150,6 +193,8 @@ catalog: bundle ## Generate FBC catalog metadata from bundle
 	@echo "---" >> catalog/toolhive-operator/catalog.yaml
 	@echo "# Bundle Schema - generated by opm render with embedded bundle objects" >> catalog/toolhive-operator/catalog.yaml
 	@echo "# Note: image field removed - using embedded olm.bundle.object data only" >> catalog/toolhive-operator/catalog.yaml
+	@echo "# Icon inheritance: opm render automatically embeds the CSV (with custom/default icon)" >> catalog/toolhive-operator/catalog.yaml
+	@echo "#   into olm.bundle.object, so catalog inherits whatever icon was set in bundle target" >> catalog/toolhive-operator/catalog.yaml
 	@opm render bundle/ -o yaml | sed '1d' | sed '/^image:/d' >> catalog/toolhive-operator/catalog.yaml
 	@echo "✅ Catalog generated successfully with embedded bundle objects (no image reference)"
 	@echo "Contents:"
@@ -412,6 +457,16 @@ olm-all: kustomize-validate bundle-validate catalog-validate catalog-build ## Ru
 	@echo ""
 
 ##@ Validation & Compliance
+
+.PHONY: validate-icon
+validate-icon: ## Validate custom icon file (ICON_FILE=path/to/icon)
+	@if [ -z "$(ICON_FILE)" ]; then \
+		echo "❌ Error: ICON_FILE parameter required"; \
+		echo "Usage: make validate-icon ICON_FILE=/path/to/your-icon.png"; \
+		exit 1; \
+	fi
+	@echo "Validating icon: $(ICON_FILE)"
+	@scripts/validate-icon.sh "$(ICON_FILE)" && echo "✅ Icon validation passed" || exit 1
 
 .PHONY: constitution-check
 constitution-check: kustomize-validate ## Verify constitution compliance

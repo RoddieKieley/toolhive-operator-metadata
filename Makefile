@@ -69,8 +69,10 @@ bundle: ## Generate OLM bundle (CSV, CRDs, metadata) with OpenShift security pat
 		echo "Applying OpenShift security patches to CSV..."; \
 		yq eval 'del(.spec.install.spec.deployments[0].spec.template.spec.containers[0].securityContext.runAsUser)' -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml; \
 		yq eval '.spec.install.spec.deployments[0].spec.template.spec.securityContext.seccompProfile = {"type": "RuntimeDefault"}' -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml; \
+		yq eval 'del(.spec.install.spec.deployments[0].spec.template.spec.containers[0].command)' -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml; \
 		echo "  ✓ Removed hardcoded runAsUser from container securityContext"; \
 		echo "  ✓ Added seccompProfile: RuntimeDefault to pod securityContext"; \
+		echo "  ✓ Removed explicit command field (using container ENTRYPOINT)"; \
 		echo "annotations:" > bundle/metadata/annotations.yaml; \
 		echo "  operators.operatorframework.io.bundle.mediatype.v1: registry+v1" >> bundle/metadata/annotations.yaml; \
 		echo "  operators.operatorframework.io.bundle.manifests.v1: manifests/" >> bundle/metadata/annotations.yaml; \

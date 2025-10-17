@@ -70,9 +70,12 @@ bundle: ## Generate OLM bundle (CSV, CRDs, metadata) with OpenShift security pat
 		yq eval 'del(.spec.install.spec.deployments[0].spec.template.spec.containers[0].securityContext.runAsUser)' -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml; \
 		yq eval '.spec.install.spec.deployments[0].spec.template.spec.securityContext.seccompProfile = {"type": "RuntimeDefault"}' -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml; \
 		yq eval 'del(.spec.install.spec.deployments[0].spec.template.spec.containers[0].command)' -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml; \
+		echo "Adding leader election RBAC permissions to CSV..."; \
+		yq eval '.spec.install.spec.permissions = [{"serviceAccountName": "toolhive-operator-controller-manager", "rules": [{"apiGroups": [""], "resources": ["configmaps"], "verbs": ["get", "list", "watch", "create", "update", "patch", "delete"]}, {"apiGroups": ["coordination.k8s.io"], "resources": ["leases"], "verbs": ["get", "list", "watch", "create", "update", "patch", "delete"]}, {"apiGroups": [""], "resources": ["events"], "verbs": ["create", "patch"]}]}]' -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml; \
 		echo "  ✓ Removed hardcoded runAsUser from container securityContext"; \
 		echo "  ✓ Added seccompProfile: RuntimeDefault to pod securityContext"; \
 		echo "  ✓ Removed explicit command field (using container ENTRYPOINT)"; \
+		echo "  ✓ Added leader election RBAC permissions (configmaps, leases, events)"; \
 		echo "annotations:" > bundle/metadata/annotations.yaml; \
 		echo "  operators.operatorframework.io.bundle.mediatype.v1: registry+v1" >> bundle/metadata/annotations.yaml; \
 		echo "  operators.operatorframework.io.bundle.manifests.v1: manifests/" >> bundle/metadata/annotations.yaml; \

@@ -6,6 +6,7 @@ _output/
 # Kubernetes Generated files
 bundle/
 bundle.Dockerfile
+catalog/toolhive-operator/catalog.yaml
 
 # Common IDE files
 .idea/

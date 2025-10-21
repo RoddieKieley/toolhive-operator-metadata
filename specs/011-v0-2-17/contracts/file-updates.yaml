@@ -1,0 +1,257 @@
+# Contract: File Update Specifications
+# Feature: 011-v0-2-17
+# Purpose: Define exact update locations and patterns for version upgrade
+
+---
+# Configuration File Updates
+
+config_files:
+  - file: config/base/params.env
+    description: Kustomize parameter file with image references
+    updates:
+      - line: 1
+        old: "toolhive-operator-image2=ghcr.io/stacklok/toolhive/operator:v0.2.17"
+        new: "toolhive-operator-image2=ghcr.io/stacklok/toolhive/operator:v0.3.11"
+        type: image_url
+
+      - line: 3
+        old: "toolhive-proxy-image=ghcr.io/stacklok/toolhive/proxyrunner:v0.2.17"
+        new: "toolhive-proxy-image=ghcr.io/stacklok/toolhive/proxyrunner:v0.3.11"
+        type: image_url
+
+    validation:
+      command: "kustomize build config/base"
+      success_criteria: "exit_code == 0"
+
+  - file: config/manager/manager.yaml
+    description: Operator deployment manifest with image references
+    updates:
+      - line: 45
+        old: 'image: "ghcr.io/stacklok/toolhive/operator:v0.2.17"'
+        new: 'image: "ghcr.io/stacklok/toolhive/operator:v0.3.11"'
+        type: image_url
+
+      - line: 67
+        old: 'value: "ghcr.io/stacklok/toolhive/proxyrunner:v0.2.17"'
+        new: 'value: "ghcr.io/stacklok/toolhive/proxyrunner:v0.3.11"'
+        type: env_var
+
+    validation:
+      command: "kustomize build config/default"
+      success_criteria: "exit_code == 0 && output contains 'v0.3.11'"
+
+---
+# Makefile Variable Updates
+
+makefile:
+  file: Makefile
+  description: Build configuration with version tag variables
+  updates:
+    - line: 12
+      old: "CATALOG_TAG ?= v0.2.17"
+      new: "CATALOG_TAG ?= v0.3.11"
+      type: makefile_variable
+      variable_name: CATALOG_TAG
+
+    - line: 21
+      old: "BUNDLE_TAG ?= v0.2.17"
+      new: "BUNDLE_TAG ?= v0.3.11"
+      type: makefile_variable
+      variable_name: BUNDLE_TAG
+
+    - line: 30
+      old: "INDEX_TAG ?= v0.2.17"
+      new: "INDEX_TAG ?= v0.3.11"
+      type: makefile_variable
+      variable_name: INDEX_TAG
+
+  validation:
+    command: "make bundle && make catalog-build"
+    success_criteria: "bundle/manifests contains v0.3.11 && catalog builds successfully"
+
+---
+# Documentation Updates
+
+documentation:
+  - file: README.md
+    description: User-facing documentation
+    update_strategy: search_replace
+    pattern: "v0\\.2\\.17"
+    replacement: "v0.3.11"
+    affected_lines:
+      - 54  # Catalog build example
+
+    validation:
+      command: "grep -c 'v0.3.11' README.md"
+      success_criteria: "count >= 1"
+
+  - file: CLAUDE.md
+    description: Agent context file
+    update_strategy: search_replace
+    pattern: "v0\\.2\\.17"
+    replacement: "v0.3.11"
+    affected_lines:
+      - 41  # Default images reference
+
+    validation:
+      command: "grep 'Default images' CLAUDE.md"
+      success_criteria: "output contains 'v0.3.11'"
+
+  - file: VALIDATION.md
+    description: Validation documentation
+    update_strategy: search_replace
+    pattern: "v0\\.2\\.17"
+    replacement: "v0.3.11"
+    affected_sections:
+      - "Catalog Build Validation"
+      - "Image Push Examples"
+
+    validation:
+      command: "grep -c 'v0.3.11' VALIDATION.md"
+      success_criteria: "count >= 3"
+
+---
+# Downloaded Manifests
+
+downloaded_manifests:
+  old_version:
+    directory: downloaded/toolhive-operator/0.2.17
+    action: preserve  # Keep for rollback
+    files:
+      - toolhive-operator.clusterserviceversion.yaml
+      - mcpregistries.crd.yaml
+      - mcpservers.crd.yaml
+
+  new_version:
+    directory: downloaded/toolhive-operator/0.3.11
+    action: create_and_download
+    source_url: "https://github.com/stacklok/toolhive/releases/tag/v0.3.11"
+    files:
+      - name: toolhive-operator.clusterserviceversion.yaml
+        expected_version_field: "spec.version: v0.3.11"
+
+      - name: mcpregistries.crd.yaml
+        immutability_check: true  # Must match 0.2.17 schema
+
+      - name: mcpservers.crd.yaml
+        immutability_check: true  # Must match 0.2.17 schema
+
+  package_metadata:
+    file: downloaded/toolhive-operator/package.yaml
+    update: false  # Package metadata is version-independent
+
+  validation:
+    command: "ls -la downloaded/toolhive-operator/0.3.11/"
+    success_criteria: "directory exists && contains 3 YAML files"
+
+---
+# Validation Contract
+
+validation_workflow:
+  phase_1_config:
+    name: "Configuration Files Validated"
+    validations:
+      - name: kustomize_base
+        command: "kustomize build config/base"
+        timeout: 5s
+        success: "exit_code == 0"
+
+      - name: kustomize_default
+        command: "kustomize build config/default"
+        timeout: 5s
+        success: "exit_code == 0"
+
+  phase_2_bundle:
+    name: "Bundle Generated and Validated"
+    depends_on: [phase_1_config]
+    validations:
+      - name: bundle_generate
+        command: "make bundle"
+        timeout: 30s
+        success: "bundle/manifests directory created"
+
+      - name: bundle_validate
+        command: "operator-sdk bundle validate bundle/"
+        timeout: 10s
+        success: "All validation tests have completed successfully"
+
+  phase_3_scorecard:
+    name: "Scorecard Tests Passed"
+    depends_on: [phase_2_bundle]
+    validations:
+      - name: scorecard
+        command: "make scorecard-test"
+        timeout: 120s
+        success: "All 6 tests passed"
+
+  phase_4_catalog:
+    name: "Catalog Built and Validated"
+    depends_on: [phase_2_bundle]
+    validations:
+      - name: catalog_build
+        command: "make catalog-build"
+        timeout: 30s
+        success: "catalog image created"
+
+      - name: catalog_validate
+        command: "opm validate catalog/"
+        timeout: 10s
+        success: "exit_code == 0"
+
+  phase_5_constitution:
+    name: "Constitution Compliance Verified"
+    depends_on: [phase_1_config, phase_2_bundle]
+    validations:
+      - name: crd_immutability
+        command: "git diff --exit-code config/crd/"
+        timeout: 1s
+        success: "exit_code == 0 (no changes)"
+
+      - name: both_overlays_build
+        command: "kustomize build config/base && kustomize build config/default"
+        timeout: 10s
+        success: "both builds succeed"
+
+---
+# Success Criteria Mapping
+
+success_criteria:
+  SC-001:
+    description: "Kustomize builds complete in under 5 seconds"
+    validation: phase_1_config.kustomize_base, phase_1_config.kustomize_default
+    threshold: "5s"
+
+  SC-002:
+    description: "Bundle validation passes on first attempt"
+    validation: phase_2_bundle.bundle_validate
+    threshold: "first_attempt"
+
+  SC-003:
+    description: "Catalog validation passes on first attempt"
+    validation: phase_4_catalog.catalog_validate
+    threshold: "first_attempt"
+
+  SC-004:
+    description: "All scorecard tests pass (100%)"
+    validation: phase_3_scorecard.scorecard
+    threshold: "6/6 tests"
+
+  SC-005:
+    description: "Constitution check passes"
+    validation: phase_5_constitution.crd_immutability, phase_5_constitution.both_overlays_build
+    threshold: "all_pass"
+
+  SC-006:
+    description: "Upgrade completes within 30 minutes"
+    validation: "end_to_end_workflow"
+    threshold: "30min"
+
+  SC-007:
+    description: "No manual intervention required"
+    validation: "automated_workflow"
+    threshold: "zero_prompts"
+
+  SC-008:
+    description: "Zero v0.2.17 references in generated manifests"
+    validation: "grep -r 'v0.2.17' bundle/ | wc -l"
+    threshold: "count == 0"

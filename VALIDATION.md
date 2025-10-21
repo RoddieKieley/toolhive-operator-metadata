@@ -28,8 +28,8 @@ opm validate catalog/
 ### Verification
 The catalog directory contains all three required FBC schemas:
 - `olm.package` - Defines toolhive-operator package with fast default channel
-- `olm.channel` - Defines fast channel with v0.2.17 entry
-- `olm.bundle` - Defines v0.2.17 bundle with correct properties and GVK references
+- `olm.channel` - Defines fast channel with v0.3.11 entry
+- `olm.bundle` - Defines v0.3.11 bundle with correct properties and GVK references
 
 ## Bundle Structure Validation
 
@@ -47,7 +47,7 @@ bundle/
 ### ClusterServiceVersion (CSV) Validation
 
 **Required Fields** - All Present ✅
-- `metadata.name`: toolhive-operator.v0.2.17
+- `metadata.name`: toolhive-operator.v0.3.11
 - `spec.displayName`: Toolhive Operator
 - `spec.description`: Comprehensive operator description
 - `spec.version`: 0.2.17
@@ -97,7 +97,7 @@ Both CRDs copied from config/crd/bases/ without modification (Constitution III c
 
 ### Build Result
 ```bash
-podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.2.17 .
+podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.3.11 .
 ```
 ✅ **SUCCESS** - Image built: 62aaaf0f6bdf
 
@@ -108,7 +108,7 @@ podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.2.
 - **Labels**: All required OLM and OCI labels present
 
 ### Image Tags
-- `ghcr.io/stacklok/toolhive/catalog:v0.2.17` ✅
+- `ghcr.io/stacklok/toolhive/catalog:v0.3.11` ✅
 - `ghcr.io/stacklok/toolhive/catalog:latest` ✅
 
 ## Referential Integrity Validation
@@ -116,16 +116,16 @@ podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.2.
 All cross-references verified ✅:
 - `olm.package.defaultChannel` → `olm.channel.name` ("fast")
 - `olm.channel.package` → `olm.package.name` ("toolhive-operator")
-- `olm.channel.entries[0].name` → `olm.bundle.name` ("toolhive-operator.v0.2.17")
+- `olm.channel.entries[0].name` → `olm.bundle.name` ("toolhive-operator.v0.3.11")
 - `olm.bundle.package` → `olm.package.name` ("toolhive-operator")
 
 ## Semantic Versioning Validation
 
 Version format verified ✅:
-- Bundle name: `toolhive-operator.v0.2.17` (correct format with 'v' prefix)
+- Bundle name: `toolhive-operator.v0.3.11` (correct format with 'v' prefix)
 - Package version property: `0.2.17` (correct semver without prefix)
 - CSV version: `0.2.17` (matches package version)
-- CSV metadata.name: `toolhive-operator.v0.2.17` (matches bundle name)
+- CSV metadata.name: `toolhive-operator.v0.3.11` (matches bundle name)
 
 ## Constitution Compliance Validation
 
@@ -177,7 +177,7 @@ operator-sdk scorecard ./bundle
 
 **Overall Status**: ✅ **VALIDATION SUCCESSFUL**
 
-The OLMv1 File-Based Catalog bundle for Toolhive Operator v0.2.17 has been validated and meets all requirements:
+The OLMv1 File-Based Catalog bundle for Toolhive Operator v0.3.11 has been validated and meets all requirements:
 
 - FBC schemas are valid and complete
 - Bundle structure follows OLM standards
@@ -194,7 +194,7 @@ The bundle and catalog are **ready for distribution** and deployment to OLMv1-en
 
 1. **Push catalog image to registry** (when ready for distribution):
    ```bash
-   podman push ghcr.io/stacklok/toolhive/catalog:v0.2.17
+   podman push ghcr.io/stacklok/toolhive/catalog:v0.3.11
    podman push ghcr.io/stacklok/toolhive/catalog:latest
    ```
 
@@ -207,7 +207,7 @@ The bundle and catalog are **ready for distribution** and deployment to OLMv1-en
      namespace: olm
    spec:
      sourceType: grpc
-     image: ghcr.io/stacklok/toolhive/catalog:v0.2.17
+     image: ghcr.io/stacklok/toolhive/catalog:v0.3.11
    ```
 
 3. **Install operator** using Subscription:

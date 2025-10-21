@@ -42,7 +42,7 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             runAsUser: 1000
-          image: "ghcr.io/stacklok/toolhive/operator:v0.2.17"
+          image: "ghcr.io/stacklok/toolhive/operator:v0.3.11"
           imagePullPolicy: IfNotPresent
           args:
           - --leader-elect
@@ -64,7 +64,7 @@ spec:
           - name: ENABLE_EXPERIMENTAL_FEATURES
             value: "false"
           - name: TOOLHIVE_RUNNER_IMAGE
-            value: "ghcr.io/stacklok/toolhive/proxyrunner:v0.2.17"
+            value: "ghcr.io/stacklok/toolhive/proxyrunner:v0.3.11"
           - name: TOOLHIVE_PROXY_HOST
             value: "0.0.0.0"
           livenessProbe:

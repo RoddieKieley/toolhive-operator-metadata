@@ -9,7 +9,7 @@
 CATALOG_REGISTRY ?= ghcr.io
 CATALOG_ORG ?= stacklok/toolhive
 CATALOG_NAME ?= catalog
-CATALOG_TAG ?= v0.2.17
+CATALOG_TAG ?= v0.3.11
 CATALOG_IMG := $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):$(CATALOG_TAG)
 
 # OLMv0 Bundle Image Configuration
@@ -18,7 +18,7 @@ CATALOG_IMG := $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):$(CATALOG_TAG)
 BUNDLE_REGISTRY ?= quay.io
 BUNDLE_ORG ?= roddiekieley
 BUNDLE_NAME ?= toolhive-operator-catalog
-BUNDLE_TAG ?= v0.2.17
+BUNDLE_TAG ?= v0.3.11
 BUNDLE_IMG := $(BUNDLE_REGISTRY)/$(BUNDLE_ORG)/$(BUNDLE_NAME):$(BUNDLE_TAG)
 
 # OLMv0 Index Image Configuration (Legacy OpenShift 4.15-4.18)
@@ -27,7 +27,7 @@ BUNDLE_IMG := $(BUNDLE_REGISTRY)/$(BUNDLE_ORG)/$(BUNDLE_NAME):$(BUNDLE_TAG)
 INDEX_REGISTRY ?= ghcr.io
 INDEX_ORG ?= stacklok/toolhive
 INDEX_NAME ?= index-olmv0
-INDEX_TAG ?= v0.2.17
+INDEX_TAG ?= v0.3.11
 INDEX_OLMV0_IMG := $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):$(INDEX_TAG)
 
 # Build tool configuration
@@ -81,9 +81,9 @@ kustomize-validate: ## Validate both kustomize builds (constitution compliance)
 bundle: ## Generate OLM bundle (CSV, CRDs, metadata) with OpenShift security patches
 	@echo "Generating OLM bundle from downloaded operator files..."
 	@mkdir -p bundle/manifests bundle/metadata
-	@if [ -d "downloaded/toolhive-operator/0.2.17" ]; then \
-		echo "Copying manifests from downloaded/toolhive-operator/0.2.17/..."; \
-		cp downloaded/toolhive-operator/0.2.17/*.yaml bundle/manifests/; \
+	@if [ -d "downloaded/toolhive-operator/0.3.11" ]; then \
+		echo "Copying manifests from downloaded/toolhive-operator/0.3.11/..."; \
+		cp downloaded/toolhive-operator/0.3.11/*.yaml bundle/manifests/; \
 		echo "Applying OpenShift security patches to CSV..."; \
 		yq eval 'del(.spec.install.spec.deployments[0].spec.template.spec.containers[0].securityContext.runAsUser)' -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml; \
 		yq eval '.spec.install.spec.deployments[0].spec.template.spec.securityContext.seccompProfile = {"type": "RuntimeDefault"}' -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml; \
@@ -130,7 +130,7 @@ bundle: ## Generate OLM bundle (CSV, CRDs, metadata) with OpenShift security pat
 		echo "Contents:"; \
 		ls -lh bundle/manifests/ bundle/metadata/; \
 	else \
-		echo "❌ Error: downloaded/toolhive-operator/0.2.17/ directory not found"; \
+		echo "❌ Error: downloaded/toolhive-operator/0.3.11/ directory not found"; \
 		echo "Run download script first or check directory structure"; \
 		exit 1; \
 	fi
@@ -201,7 +201,7 @@ catalog: bundle ## Generate FBC catalog metadata from bundle
 	@echo "name: fast" >> catalog/toolhive-operator/catalog.yaml
 	@echo "package: toolhive-operator" >> catalog/toolhive-operator/catalog.yaml
 	@echo "entries:" >> catalog/toolhive-operator/catalog.yaml
-	@echo "  - name: toolhive-operator.v0.2.17" >> catalog/toolhive-operator/catalog.yaml
+	@echo "  - name: toolhive-operator.v0.3.11" >> catalog/toolhive-operator/catalog.yaml
 	@echo "    # Initial release - no replaces/skips" >> catalog/toolhive-operator/catalog.yaml
 	@echo "" >> catalog/toolhive-operator/catalog.yaml
 	@echo "---" >> catalog/toolhive-operator/catalog.yaml

@@ -38,7 +38,7 @@ kustomize build config/default
   - Resources: CRDs, RBAC, manager deployment, metrics service
 
 - **config/manager/** - Controller deployment manifests
-  - Default images: `ghcr.io/stacklok/toolhive/operator:v0.2.17` and `ghcr.io/stacklok/toolhive/proxyrunner:v0.2.17`
+  - Default images: `ghcr.io/stacklok/toolhive/operator:v0.3.11` and `ghcr.io/stacklok/toolhive/proxyrunner:v0.3.11`
   - Metrics port: 8080, Health port: 8081
 
 - **config/crd/** - Custom Resource Definitions for MCPRegistry and MCPServer

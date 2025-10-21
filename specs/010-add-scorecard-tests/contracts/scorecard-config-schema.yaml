@@ -1,0 +1,85 @@
+# Scorecard Configuration Schema Contract
+# This defines the structure of the scorecard configuration file
+# Location: bundle/tests/scorecard/config.yaml
+
+apiVersion: scorecard.operatorframework.io/v1alpha3
+kind: Configuration
+
+metadata:
+  name: string  # Configuration name (typically "config")
+
+stages:
+  - parallel: boolean  # Optional: run tests in parallel (default: false)
+    tests:
+      - image: string  # Required: container image with test
+        # Format: registry/organization/image:tag
+        # Example: quay.io/operator-framework/scorecard-test:v1.41.0
+
+        entrypoint:  # Optional: command and arguments
+          - string   # First element is command
+          - string   # Subsequent elements are arguments
+        # Example: ["scorecard-test", "basic-check-spec"]
+
+        labels:  # Optional: metadata for test selection
+          suite: string  # Test suite (basic, olm, custom)
+          test: string   # Unique test identifier
+        # Example: {suite: "basic", test: "basic-check-spec-test"}
+
+        storage:  # Optional: storage configuration
+          spec:
+            mountPath:
+              path: string  # Optional: custom mount path
+            # Default: {} (use scorecard defaults)
+
+storage:  # Optional: global storage configuration
+  spec:
+    mountPath:
+      path: string  # Optional: global mount path
+    # Default: {} (bundle mounted at /bundle)
+
+---
+# Contract Rules:
+#
+# 1. REQUIRED FIELDS:
+#    - apiVersion: Must be "scorecard.operatorframework.io/v1alpha3"
+#    - kind: Must be "Configuration"
+#    - metadata.name: Non-empty string
+#    - stages: At least one stage
+#    - stages[].tests: At least one test per stage
+#    - tests[].image: Valid container image reference
+#
+# 2. OPTIONAL FIELDS:
+#    - stages[].parallel: Boolean (default: false)
+#    - tests[].entrypoint: Array of strings (uses image default if omitted)
+#    - tests[].labels: Map of string key-value pairs
+#    - tests[].storage: Storage configuration
+#    - storage: Global storage configuration
+#
+# 3. VALIDATION RULES:
+#    - Image must be pullable from specified registry
+#    - Entrypoint command must exist in container image
+#    - Labels must follow Kubernetes label format (RFC 1123)
+#    - Test names should be unique (not enforced but recommended)
+#
+# 4. STANDARD LABEL CONVENTIONS:
+#    - suite: Grouping identifier (basic, olm, custom)
+#    - test: Unique test identifier (suffix with "-test")
+#
+# 5. IMAGE REQUIREMENTS:
+#    - Must contain scorecard test binary
+#    - Must accept bundle mount at /bundle
+#    - Must output v1alpha3 JSON results to stdout
+#    - Must use exit code 0 for success, non-zero for failure
+#
+# 6. EXECUTION BEHAVIOR:
+#    - Each test runs in a separate Kubernetes Pod
+#    - Bundle is automatically mounted at /bundle in test container
+#    - Tests have access to in-cluster Kubernetes API
+#    - Parallel execution creates multiple Pods simultaneously
+#    - Sequential execution creates one Pod at a time
+#
+# 7. STORAGE CONFIGURATION:
+#    - Empty mountPath ({}) uses scorecard defaults
+#    - Custom path overrides default /bundle mount
+#    - Global storage applies to all tests unless overridden
+#    - Test-specific storage overrides global configuration

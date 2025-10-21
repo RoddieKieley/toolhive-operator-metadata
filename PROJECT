@@ -5,6 +5,6 @@
 cliVersion: 4.8.0
 domain: redhat.com
 layout:
-- kustomize.common.kubebuilder.io/v2
+- go.kubebuilder.io/v4
 projectName: toolhive-operator
 version: "3"

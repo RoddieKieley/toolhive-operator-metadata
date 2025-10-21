@@ -1,17 +1,17 @@
 <!--
   Sync Impact Report
   ==================
-  Version Change: 1.1.0 → 1.1.1 (governance policy expansion)
+  Version Change: 1.1.1 → 1.1.2 (governance policy clarification)
 
   Modified Principles: N/A
 
   Added Sections:
-  - Git Operations Policy (under Governance section)
+  - Operator SDK Plugin Policy (under Governance section)
 
   Removed Sections: N/A
 
   Templates Requiring Updates:
-  ✅ plan-template.md - reviewed, no git-specific checks required
+  ✅ plan-template.md - reviewed, no operator-sdk specific checks required
   ✅ spec-template.md - reviewed, no conflicts
   ✅ tasks-template.md - reviewed, no conflicts
 
@@ -102,6 +102,10 @@ When adding manifests for OpenDataHub integration, developers MUST:
 
 **Git Operations Policy**: Git operations that modify the repository state are PROHIBITED during automated processes, constitutional updates, and development workflows unless explicitly requested by a human operator. Read-only git operations (status, log, diff, show, branch listing) are permitted for informational purposes. Write operations (commit, push, merge, rebase, tag, config changes) MUST only be performed through explicit human-initiated actions.
 
+**Operator SDK Plugin Policy**: When using operator-sdk for any operations (bundle generation, scorecard testing, or other SDK commands), the `go.kubebuilder.io/v4` plugin MUST be specified. Commands that do not explicitly specify this plugin will fail with plugin resolution errors. This requirement applies to all operator-sdk invocations in Makefiles, scripts, and documentation.
+
+**Rationale**: The operator-sdk defaults have changed across versions, and this project's structure requires the v4 plugin for compatibility. Explicit plugin specification prevents failures and ensures consistent behavior across development environments.
+
 **Compliance Verification**: All pull requests MUST verify:
 1. `kustomize build config/base` succeeds
 2. `kustomize build config/default` succeeds
@@ -109,5 +113,6 @@ When adding manifests for OpenDataHub integration, developers MUST:
 4. New patches are documented
 5. Namespace placement is correct for the overlay
 6. OLM catalog contains valid `olm.package`, `olm.channel`, and `olm.bundle` blobs
+7. operator-sdk commands specify `go.kubebuilder.io/v4` plugin where applicable
 
-**Version**: 1.1.1 | **Ratified**: 2025-10-07 | **Last Amended**: 2025-10-16
+**Version**: 1.1.2 | **Ratified**: 2025-10-07 | **Last Amended**: 2025-10-21

@@ -50,6 +50,14 @@ check-icon-deps: ## Check icon processing script dependencies
 	@test -x scripts/validate-icon.sh || { echo "❌ Error: scripts/validate-icon.sh not executable"; exit 1; }
 	@echo "✅ All icon processing dependencies present"
 
+.PHONY: check-scorecard-deps
+check-scorecard-deps: ## Check scorecard prerequisites
+	@echo "Checking scorecard dependencies..."
+	@command -v operator-sdk >/dev/null 2>&1 && echo "  ✓ operator-sdk found ($$(operator-sdk version | head -1))" || { echo "  ✗ operator-sdk not found"; echo "    Install: https://sdk.operatorframework.io/docs/installation/"; exit 1; }
+	@command -v kubectl >/dev/null 2>&1 && echo "  ✓ kubectl found (version: $$(kubectl version --client -o json 2>/dev/null | grep gitVersion | cut -d'"' -f4))" || command -v oc >/dev/null 2>&1 && echo "  ✓ oc found" || { echo "  ✗ kubectl/oc not found"; echo "    Install kubectl: https://kubernetes.io/docs/tasks/tools/"; exit 1; }
+	@kubectl cluster-info >/dev/null 2>&1 && echo "  ✓ Cluster accessible" || { echo "  ✗ Cluster not accessible"; echo "    Setup kind: kind create cluster"; echo "    Or minikube: minikube start"; exit 1; }
+	@echo "✅ All scorecard dependencies present"
+
 ##@ Kustomize Targets
 
 .PHONY: kustomize-build-default
@@ -105,6 +113,10 @@ bundle: ## Generate OLM bundle (CSV, CRDs, metadata) with OpenShift security pat
 			  -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml || exit 1; \
 			rm -f bundle_icon_meta.tmp; \
 		fi; \
+		echo "Copying scorecard configuration..."; \
+		mkdir -p bundle/tests/scorecard; \
+		cp config/scorecard/config.yaml bundle/tests/scorecard/config.yaml; \
+		echo "  ✓ Scorecard configuration copied to bundle/tests/scorecard/"; \
 		echo "annotations:" > bundle/metadata/annotations.yaml; \
 		echo "  operators.operatorframework.io.bundle.mediatype.v1: registry+v1" >> bundle/metadata/annotations.yaml; \
 		echo "  operators.operatorframework.io.bundle.manifests.v1: manifests/" >> bundle/metadata/annotations.yaml; \
@@ -112,6 +124,8 @@ bundle: ## Generate OLM bundle (CSV, CRDs, metadata) with OpenShift security pat
 		echo "  operators.operatorframework.io.bundle.package.v1: toolhive-operator" >> bundle/metadata/annotations.yaml; \
 		echo "  operators.operatorframework.io.bundle.channels.v1: fast" >> bundle/metadata/annotations.yaml; \
 		echo "  operators.operatorframework.io.bundle.channel.default.v1: fast" >> bundle/metadata/annotations.yaml; \
+		echo "  operators.operatorframework.io.test.config.v1: tests/scorecard/" >> bundle/metadata/annotations.yaml; \
+		echo "  operators.operatorframework.io.test.mediatype.v1: scorecard+v1" >> bundle/metadata/annotations.yaml; \
 		echo "✅ Bundle generated successfully with OpenShift patches applied"; \
 		echo "Contents:"; \
 		ls -lh bundle/manifests/ bundle/metadata/; \
@@ -467,6 +481,21 @@ validate-icon: ## Validate custom icon file (ICON_FILE=path/to/icon)
 	fi
 	@echo "Validating icon: $(ICON_FILE)"
 	@scripts/validate-icon.sh "$(ICON_FILE)" && echo "✅ Icon validation passed" || exit 1
+
+.PHONY: scorecard-test
+scorecard-test: bundle ## Run scorecard tests against bundle
+	@echo "Running scorecard tests..."
+	@if [ ! -d "bundle/manifests" ]; then \
+		echo "❌ Error: Bundle directory not found at ./bundle"; \
+		echo "Run 'make bundle' to generate the bundle first."; \
+		exit 1; \
+	fi
+	@$(MAKE) check-scorecard-deps
+	@echo ""
+	@echo "Executing scorecard tests against bundle/..."
+	@operator-sdk scorecard bundle/ -o text || { echo ""; echo "❌ Scorecard tests failed"; exit 1; }
+	@echo ""
+	@echo "✅ All scorecard tests passed"
 
 .PHONY: constitution-check
 constitution-check: kustomize-validate ## Verify constitution compliance

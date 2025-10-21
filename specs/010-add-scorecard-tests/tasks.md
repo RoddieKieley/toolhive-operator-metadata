@@ -25,7 +25,7 @@ This document provides the detailed task breakdown for implementing Operator SDK
 
 ## Phase 1: Setup
 
-### T001 - Create scorecard directory structure
+### T001 - [X] Create scorecard directory structure
 
 **Story**: Setup
 **File**: `config/scorecard/` (new directory)
@@ -45,7 +45,7 @@ mkdir -p config/scorecard
 
 ## Phase 2: Foundational
 
-### T002 - Create scorecard configuration template
+### T002 - [X] Create scorecard configuration template
 
 **Story**: Foundation
 **File**: `config/scorecard/config.yaml`
@@ -72,7 +72,7 @@ Create the scorecard configuration file with basic and OLM test suites.
 
 ---
 
-### T003 - Create scorecard kustomization file
+### T003 - [X] Create scorecard kustomization file
 
 **Story**: Foundation
 **File**: `config/scorecard/kustomization.yaml`
@@ -97,7 +97,7 @@ Create kustomization.yaml for scorecard configuration.
 
 ---
 
-### T004 - [US1] Update bundle target to copy scorecard config
+### T004 - [X] [US1] Update bundle target to copy scorecard config
 
 **Story**: US1
 **File**: `Makefile` (bundle target)
@@ -115,7 +115,7 @@ Modify the bundle generation target to copy scorecard configuration from config/
 
 ---
 
-### T005 - [US1] Update bundle annotations for scorecard
+### T005 - [X] [US1] Update bundle annotations for scorecard
 
 **Story**: US1
 **File**: `Makefile` (bundle target, annotations section)
@@ -134,7 +134,7 @@ operators.operatorframework.io.test.mediatype.v1: scorecard+v1
 
 ---
 
-### T006 - [US1] Create check-scorecard-deps target
+### T006 - [X] [US1] Create check-scorecard-deps target
 
 **Story**: US1
 **File**: `Makefile` (new target)
@@ -155,7 +155,7 @@ Create Makefile target to verify scorecard prerequisites are installed.
 
 ---
 
-### T007 - [US1] Create scorecard-test target
+### T007 - [X] [US1] Create scorecard-test target
 
 **Story**: US1
 **File**: `Makefile` (new target)
@@ -182,7 +182,7 @@ scorecard-test: bundle ## Run scorecard tests against bundle
 
 ---
 
-### T008 - [US1] Test MVP workflow
+### T008 - [X] [US1] Test MVP workflow
 
 **Story**: US1
 **File**: Multiple (integration test)

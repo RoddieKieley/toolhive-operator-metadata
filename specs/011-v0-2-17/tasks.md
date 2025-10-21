@@ -447,19 +447,11 @@ Verify all constitution principles maintained after upgrade.
 
 **Implementation**:
 ```bash
-# Run constitution check
+# Constitution compliance check (manual verification - no make target)
 echo "Verifying constitution compliance..."
-make constitution-check
 
-if [ $? -eq 0 ]; then
-  echo "✓ Constitution compliance verified"
-else
-  echo "✗ Constitution check failed"
-  exit 1
-fi
-
-# Verify CRDs unchanged (critical check)
-echo "Checking CRD immutability..."
+# Principle III: Verify CRDs unchanged (CRITICAL - NON-NEGOTIABLE)
+echo "Checking CRD immutability (Principle III)..."
 git diff --exit-code config/crd/
 
 if [ $? -eq 0 ]; then
@@ -470,15 +462,18 @@ else
   exit 1
 fi
 
-# Verify both overlays still build
+# Principle I: Verify both overlays build successfully
+echo "Checking manifest integrity (Principle I)..."
 kustomize build config/base > /dev/null && kustomize build config/default > /dev/null
 
 if [ $? -eq 0 ]; then
-  echo "✓ Both overlays build successfully"
+  echo "✓ Both overlays build successfully (Principle I)"
 else
-  echo "✗ Kustomize build failures detected"
+  echo "✗ Kustomize build failures detected - CONSTITUTION VIOLATION"
   exit 1
 fi
+
+echo "✓ Constitution compliance verified (Principles I, III checked)"
 ```
 
 **Verification**: Constitution check passes; CRDs unchanged; both overlays build
@@ -648,9 +643,9 @@ opm validate catalog/ > /dev/null 2>&1 && echo "PASS" || echo "FAIL"
 echo -n "SC-004 Scorecard tests (6/6): "
 make scorecard-test > /dev/null 2>&1 && echo "PASS" || echo "FAIL"
 
-# SC-005: Constitution check passes
+# SC-005: Constitution check passes (Principle I: builds + Principle III: CRD immutability)
 echo -n "SC-005 Constitution compliance: "
-make constitution-check > /dev/null 2>&1 && git diff --exit-code config/crd/ > /dev/null 2>&1 && echo "PASS" || echo "FAIL"
+kustomize build config/base > /dev/null 2>&1 && kustomize build config/default > /dev/null 2>&1 && git diff --exit-code config/crd/ > /dev/null 2>&1 && echo "PASS" || echo "FAIL"
 
 # SC-006: Upgrade completed in <30 minutes
 echo "SC-006 Upgrade time: Manual tracking required (target <30 minutes)"

@@ -30,6 +30,11 @@ Rollback should be initiated if any of the following occur:
    - OpenShift compatibility problems
    - Image availability issues
 
+4. **Runtime Failures**:
+   - Cosign signature verification failures (v3.10.1 incompatibility)
+   - Container image pull failures with attestation errors
+   - MCPServer pods fail to start with image validation errors
+
 ---
 
 ## Pre-Rollback Checklist
@@ -253,6 +258,34 @@ make bundle FORCE=true
 2. Check for manual edits outside version changes
 3. Re-clone repository and redo rollback from clean state
 4. Consult git history for unexpected changes
+
+### Scenario 4: Cosign Runtime Failures (v3.10.1 Incompatibility)
+
+**Symptom**: After v0.3.11 deployment to cluster:
+- Operator logs show "signature verification failed" errors
+- Container image pull failures with attestation/verification errors
+- MCPServer pods stuck in `ImagePullBackOff` or `ErrImagePull` state
+- Events show: `Failed to pull image: signature verify failed`
+
+**Detection**:
+```bash
+# Check operator logs
+kubectl logs -n opendatahub deployment/toolhive-operator-controller-manager | grep -i "signature\|cosign\|verify"
+
+# Check MCPServer pod events
+kubectl get events -n opendatahub --field-selector involvedObject.kind=Pod | grep -i "image\|pull"
+```
+
+**Root Cause**: Cosign downgrade from v4 to v3.10.1 in v0.3.11 is incompatible with cluster's image signing/verification infrastructure
+
+**Resolution**:
+1. **Immediate**: Initiate rollback to v0.2.17 using standard procedure (Steps 1-5)
+2. **Verify**: After rollback, confirm operator logs no longer show signature errors
+3. **Document**: Capture full error messages and cosign version info
+4. **Escalate**: Report to upstream Toolhive project with evidence
+5. **Wait**: Do not retry v0.3.11 until upstream addresses cosign compatibility
+
+**Note**: This failure mode cannot be detected by build/validation tests (T010-T013); only appears in live cluster runtime.
 
 ---
 

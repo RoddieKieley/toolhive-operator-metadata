@@ -57,10 +57,31 @@ As a developer or user, I need documentation to reflect v0.3.11 as the current v
 
 ### Edge Cases
 
-- What happens when generated bundle references old v0.2.17 version due to cached downloads?
-- How does the system handle if v0.3.11 container images are not yet pulled locally?
-- What happens if v0.3.11 introduces breaking changes that cause validation failures?
-- How does the system handle rollback if v0.3.11 proves incompatible?
+- **Cached downloads**: What happens when generated bundle references old v0.2.17 version due to cached downloads?
+  - *Detection*: T009 (bundle generation) + T010 (validation) verify correct version
+  - *Resolution*: `make clean-bundle` before regeneration; verify with `grep v0.3.11 bundle/manifests/*.yaml`
+
+- **Image availability**: How does the system handle if v0.3.11 container images are not yet pulled locally?
+  - *Prevention*: T003 verifies image availability before any configuration updates (blocking gate)
+  - *Resolution*: `podman pull ghcr.io/stacklok/toolhive/operator:v0.3.11` manually if needed
+
+- **Breaking changes**: What happens if v0.3.11 introduces breaking changes that cause validation failures?
+  - *Detection*: T010 (bundle structure), T011 (scorecard API contract), T013 (CRD immutability check)
+  - *Response*: See [contracts/rollback-procedure.md](contracts/rollback-procedure.md) for reversion to v0.2.17
+  - *Indicators*: Scorecard test failures, CRD schema changes, bundle validation errors
+
+- **Rollback**: How does the system handle rollback if v0.3.11 proves incompatible?
+  - *Guarantee*: v0.2.17 manifests preserved in `downloaded/toolhive-operator/0.2.17/` (Principle VI)
+  - *Procedure*: Revert version references in 3 files (params.env, manager.yaml, Makefile) + regenerate bundle
+  - *Validation*: Re-run T008 (kustomize builds) to confirm v0.2.17 restoration
+
+- **Cosign version compatibility**: What if the cosign installer downgrade (v4 → v3.10.1 in v0.3.11) causes runtime failures?
+  - *Assumption*: Cosign v3.10.1 is compatible with existing signature verification workflows (spec.md:L122)
+  - *Build-time detection*: T010 (bundle validation), T011 (scorecard tests) verify manifest correctness
+  - *Runtime detection*: Requires cluster deployment; monitor operator logs for signature verification errors
+  - *Symptoms*: Container image pull failures, "signature verification failed" errors in operator logs
+  - *Mitigation*: If detected in production, rollback to v0.2.17 per rollback procedure
+  - *Note*: Build/validation tests cannot detect cosign runtime issues; requires live cluster testing
 
 ## Requirements *(mandatory)*
 

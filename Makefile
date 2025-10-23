@@ -6,9 +6,9 @@
 # OLMv1 Catalog Image Configuration (Modern OpenShift 4.19+)
 # Components can be overridden via environment variables or make arguments:
 #   make catalog-build CATALOG_REGISTRY=quay.io CATALOG_ORG=myuser
-CATALOG_REGISTRY ?= ghcr.io
-CATALOG_ORG ?= stacklok/toolhive
-CATALOG_NAME ?= catalog
+CATALOG_REGISTRY ?= quay.io
+CATALOG_ORG ?= roddiekieley
+CATALOG_NAME ?= toolhive-operator-catalog
 CATALOG_TAG ?= v0.3.11
 CATALOG_IMG := $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):$(CATALOG_TAG)
 
@@ -17,16 +17,16 @@ CATALOG_IMG := $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):$(CATALOG_TAG)
 #   make bundle-build BUNDLE_REGISTRY=ghcr.io BUNDLE_ORG=stacklok/toolhive BUNDLE_TAG=dev
 BUNDLE_REGISTRY ?= quay.io
 BUNDLE_ORG ?= roddiekieley
-BUNDLE_NAME ?= toolhive-operator-catalog
+BUNDLE_NAME ?= toolhive-operator-bundle
 BUNDLE_TAG ?= v0.3.11
 BUNDLE_IMG := $(BUNDLE_REGISTRY)/$(BUNDLE_ORG)/$(BUNDLE_NAME):$(BUNDLE_TAG)
 
 # OLMv0 Index Image Configuration (Legacy OpenShift 4.15-4.18)
 # Components can be overridden independently:
 #   make index-olmv0-build INDEX_REGISTRY=quay.io INDEX_ORG=myteam
-INDEX_REGISTRY ?= ghcr.io
-INDEX_ORG ?= stacklok/toolhive
-INDEX_NAME ?= index-olmv0
+INDEX_REGISTRY ?= quay.io
+INDEX_ORG ?= roddiekieley
+INDEX_NAME ?= toolhive-operator-index
 INDEX_TAG ?= v0.3.11
 INDEX_OLMV0_IMG := $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):$(INDEX_TAG)
 
@@ -440,8 +440,8 @@ index-olmv0-all: index-olmv0-build index-olmv0-validate index-olmv0-push ## Run 
 .PHONY: index-clean
 index-clean: ## Remove local OLMv0 index images
 	@echo "Removing OLMv0 index images..."
-	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/index-olmv0:v0.2.17
-	-$(CONTAINER_TOOL) rmi ghcr.io/stacklok/toolhive/index-olmv0:latest
+	-$(CONTAINER_TOOL) rmi $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):$(INDEX_TAG)
+	-$(CONTAINER_TOOL) rmi $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):latest
 	@echo "✅ OLMv0 index images removed"
 
 .PHONY: index-validate-all

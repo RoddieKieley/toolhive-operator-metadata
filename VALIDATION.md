@@ -97,7 +97,7 @@ Both CRDs copied from config/crd/bases/ without modification (Constitution III c
 
 ### Build Result
 ```bash
-podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.3.11 .
+podman build -f Containerfile.catalog -t quay.io/roddiekieley/toolhive-operator-catalog:v0.3.11 .
 ```
 ✅ **SUCCESS** - Image built: 62aaaf0f6bdf
 
@@ -108,8 +108,8 @@ podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/catalog:v0.3.
 - **Labels**: All required OLM and OCI labels present
 
 ### Image Tags
-- `ghcr.io/stacklok/toolhive/catalog:v0.3.11` ✅
-- `ghcr.io/stacklok/toolhive/catalog:latest` ✅
+- `quay.io/roddiekieley/toolhive-operator-catalog:v0.3.11` ✅
+- `quay.io/roddiekieley/toolhive-operator-catalog:latest` ✅
 
 ## Referential Integrity Validation
 
@@ -194,8 +194,8 @@ The bundle and catalog are **ready for distribution** and deployment to OLMv1-en
 
 1. **Push catalog image to registry** (when ready for distribution):
    ```bash
-   podman push ghcr.io/stacklok/toolhive/catalog:v0.3.11
-   podman push ghcr.io/stacklok/toolhive/catalog:latest
+   podman push quay.io/roddiekieley/toolhive-operator-catalog:v0.3.11
+   podman push quay.io/roddiekieley/toolhive-operator-catalog:latest
    ```
 
 2. **Deploy to cluster** using CatalogSource:
@@ -207,7 +207,7 @@ The bundle and catalog are **ready for distribution** and deployment to OLMv1-en
      namespace: olm
    spec:
      sourceType: grpc
-     image: ghcr.io/stacklok/toolhive/catalog:v0.3.11
+     image: quay.io/roddiekieley/toolhive-operator-catalog:v0.3.11
    ```
 
 3. **Install operator** using Subscription:

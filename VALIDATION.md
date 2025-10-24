@@ -28,8 +28,8 @@ opm validate catalog/
 ### Verification
 The catalog directory contains all three required FBC schemas:
 - `olm.package` - Defines toolhive-operator package with fast default channel
-- `olm.channel` - Defines fast channel with v0.3.11 entry
-- `olm.bundle` - Defines v0.3.11 bundle with correct properties and GVK references
+- `olm.channel` - Defines fast channel with v0.4.2 entry
+- `olm.bundle` - Defines v0.4.2 bundle with correct properties and GVK references
 
 ## Bundle Structure Validation
 
@@ -47,7 +47,7 @@ bundle/
 ### ClusterServiceVersion (CSV) Validation
 
 **Required Fields** - All Present ✅
-- `metadata.name`: toolhive-operator.v0.3.11
+- `metadata.name`: toolhive-operator.v0.4.2
 - `spec.displayName`: Toolhive Operator
 - `spec.description`: Comprehensive operator description
 - `spec.version`: 0.2.17
@@ -97,7 +97,7 @@ Both CRDs copied from config/crd/bases/ without modification (Constitution III c
 
 ### Build Result
 ```bash
-podman build -f Containerfile.catalog -t quay.io/roddiekieley/toolhive-operator-catalog:v0.3.11 .
+podman build -f Containerfile.catalog -t quay.io/roddiekieley/toolhive-operator-catalog:v0.4.2 .
 ```
 ✅ **SUCCESS** - Image built: 62aaaf0f6bdf
 

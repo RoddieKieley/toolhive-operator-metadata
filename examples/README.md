@@ -47,7 +47,7 @@ kubectl get catalogsource -n olm toolhive-catalog
 kubectl apply -f examples/subscription.yaml
 ```
 
-**Image**: `quay.io/roddiekieley/toolhive-operator-catalog:v0.3.11`
+**Image**: `quay.io/roddiekieley/toolhive-operator-catalog:v0.4.2`
 
 **See**: Full documentation in [catalogsource-olmv1.yaml](catalogsource-olmv1.yaml)
 
@@ -76,7 +76,7 @@ kubectl get catalogsource -n olm toolhive-catalog-olmv0
 kubectl apply -f examples/subscription.yaml
 ```
 
-**Image**: `quay.io/roddiekieley/toolhive-operator-index:v0.3.11`
+**Image**: `quay.io/roddiekieley/toolhive-operator-index:v0.4.2`
 
 **See**: Full documentation in [catalogsource-olmv0.yaml](catalogsource-olmv0.yaml)
 
@@ -161,7 +161,7 @@ kubectl get pods -n toolhive-system
    ```
 2. Ensure bundle image exists:
    ```bash
-   podman pull quay.io/roddiekieley/toolhive-operator-bundle:v0.3.11
+   podman pull quay.io/roddiekieley/toolhive-operator-bundle:v0.4.2
    ```
 3. Check `opm` version:
    ```bash

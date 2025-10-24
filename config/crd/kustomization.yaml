@@ -3,6 +3,7 @@
 # It should be run by config/default
 resources:
 - bases/toolhive.stacklok.dev_mcpexternalauthconfigs.yaml
+- bases/toolhive.stacklok.dev_mcpgroups.yaml
 - bases/toolhive.stacklok.dev_mcpregistries.yaml
 - bases/toolhive.stacklok.dev_mcpremoteproxies.yaml
 - bases/toolhive.stacklok.dev_mcpservers.yaml

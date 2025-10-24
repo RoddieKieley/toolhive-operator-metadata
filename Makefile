@@ -106,8 +106,8 @@ bundle: ## Generate OLM bundle (CSV, CRDs, metadata) with OpenShift security pat
 			rm -f bundle_icon_meta.tmp; \
 			echo "  ✓ Custom icon encoded and injected"; \
 		else \
-			echo "Using default icon from icons/default-icon.svg"; \
-			ENCODED=$$(scripts/encode-icon.sh "icons/default-icon.svg" 2>bundle_icon_meta.tmp) || exit 1; \
+			echo "Using default icon from icons/toolhive-icon-honey-wide-80x40.png"; \
+			ENCODED=$$(scripts/encode-icon.sh "icons/toolhive-icon-honey-wide-80x40.png" 2>bundle_icon_meta.tmp) || exit 1; \
 			MEDIATYPE=$$(grep "^MEDIATYPE:" bundle_icon_meta.tmp | cut -d: -f2); \
 			yq eval '.spec.icon = [{"base64data": "'"$$ENCODED"'", "mediatype": "'"$$MEDIATYPE"'"}]' \
 			  -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml || exit 1; \
@@ -190,9 +190,13 @@ catalog: bundle ## Generate FBC catalog metadata from bundle
 		rm -f catalog_icon_meta.tmp; \
 		echo "  ✓ Custom catalog icon encoded and injected"; \
 	else \
+		echo "Using default catalog icon from icons/toolhive-icon-honey-wide-80x40.png"; \
+		ENCODED=$$(scripts/encode-icon.sh "icons/toolhive-icon-honey-wide-80x40.png" 2>catalog_icon_meta.tmp) || exit 1; \
+		MEDIATYPE=$$(grep "^MEDIATYPE:" catalog_icon_meta.tmp | cut -d: -f2); \
 		echo "icon:" >> catalog/toolhive-operator/catalog.yaml; \
-		echo "  base64data: PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzAwN2ZmZiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI1NiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPk08L3RleHQ+Cjwvc3ZnPg==" >> catalog/toolhive-operator/catalog.yaml; \
-		echo "  mediatype: image/svg+xml" >> catalog/toolhive-operator/catalog.yaml; \
+		echo "  base64data: $$ENCODED" >> catalog/toolhive-operator/catalog.yaml; \
+		echo "  mediatype: $$MEDIATYPE" >> catalog/toolhive-operator/catalog.yaml; \
+		rm -f catalog_icon_meta.tmp; \
 	fi
 	@echo "" >> catalog/toolhive-operator/catalog.yaml
 	@echo "---" >> catalog/toolhive-operator/catalog.yaml

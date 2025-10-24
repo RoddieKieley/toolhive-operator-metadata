@@ -100,8 +100,11 @@ rules:
 - apiGroups:
   - toolhive.stacklok.dev
   resources:
+  - mcpexternalauthconfigs
   - mcpregistries
+  - mcpremoteproxies
   - mcpservers
+  - mcptoolconfigs
   verbs:
   - create
   - delete
@@ -113,15 +116,21 @@ rules:
 - apiGroups:
   - toolhive.stacklok.dev
   resources:
+  - mcpexternalauthconfigs/finalizers
   - mcpregistries/finalizers
+  - mcpremoteproxies/finalizers
   - mcpservers/finalizers
+  - mcptoolconfigs/finalizers
   verbs:
   - update
 - apiGroups:
   - toolhive.stacklok.dev
   resources:
+  - mcpexternalauthconfigs/status
   - mcpregistries/status
+  - mcpremoteproxies/status
   - mcpservers/status
+  - mcptoolconfigs/status
   verbs:
   - get
   - patch

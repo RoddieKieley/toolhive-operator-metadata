@@ -161,17 +161,20 @@ make validate-all          # Run all validations
 
 ### Constitution Compliance
 
-This repository follows strict constitutional principles:
+This repository follows strict constitutional principles (Constitution v1.2.0):
 
 1. **Manifest Integrity**: All kustomize builds must pass
 2. **Kustomize-Based Customization**: Use overlays, not direct modifications
 3. **CRD Immutability**: CRDs are never modified here (upstream only)
 4. **OpenShift Compatibility**: Maintained via config/base overlay
 5. **Namespace Awareness**: Explicit namespace handling
+6. **OLM Catalog Multi-Bundle Support**: Supports multiple bundle versions
+7. **Scorecard Quality Assurance**: All operator-sdk scorecard tests must pass
 
 Verify compliance:
 ```shell
-make constitution-check
+make constitution-check      # Verify kustomize builds
+make scorecard-test         # Run scorecard validation
 ```
 
 ### Adding New Operator Versions
@@ -188,19 +191,24 @@ make constitution-check
 
 All validation results are documented in [VALIDATION.md](VALIDATION.md).
 
-Current status: ✅ All validations passing
+**Current status**: ✅ All validations passing (v0.4.2)
 
 - FBC Schema: ✅ opm validate passed
-- Bundle Structure: ✅ Complete and correct
-- Constitution Compliance: ✅ All principles satisfied
-- Catalog Image: ✅ Built successfully (7.88 KB)
+- Bundle Structure: ✅ Complete and correct (1 CSV + 6 CRDs)
+- Scorecard Tests: ✅ All 6 tests passing
+- Constitution Compliance: ✅ All 7 principles satisfied
+- Catalog Image: ✅ Built successfully
 
 ## Custom Resources
 
-The operator manages two primary CRDs:
+The operator manages six custom resource types:
 
 - **MCPRegistry** (`mcpregistries.toolhive.stacklok.dev`) - Manages registries of MCP server definitions
 - **MCPServer** (`mcpservers.toolhive.stacklok.dev`) - Manages individual MCP server instances
+- **MCPGroup** (`mcpgroups.toolhive.stacklok.dev`) - Organizes and manages groups of MCP servers
+- **MCPRemoteProxy** (`mcpremoteproxies.toolhive.stacklok.dev`) - Configures remote proxy connections
+- **MCPExternalAuthConfig** (`mcpexternalauthconfigs.toolhive.stacklok.dev`) - Configures external authentication
+- **MCPToolConfig** (`mcptoolconfigs.toolhive.stacklok.dev`) - Configures individual tools within MCP servers
 
 ## License
 

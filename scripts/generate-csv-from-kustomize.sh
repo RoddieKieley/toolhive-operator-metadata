@@ -51,31 +51,63 @@ spec:
         kind: MCPExternalAuthConfig
         name: mcpexternalauthconfigs.toolhive.stacklok.dev
         version: v1alpha1
+        resources:
+          - kind: Secret
+            version: v1
       - description: MCPGroup organizes and manages groups of MCP servers
         displayName: MCP Group
         kind: MCPGroup
         name: mcpgroups.toolhive.stacklok.dev
         version: v1alpha1
+        resources:
+          - kind: MCPServer
+            version: v1alpha1
       - description: MCPRegistry manages registries of MCP server definitions
         displayName: MCP Registry
         kind: MCPRegistry
         name: mcpregistries.toolhive.stacklok.dev
         version: v1alpha1
+        resources:
+          - kind: ConfigMap
+            version: v1
+          - kind: MCPServer
+            version: v1alpha1
       - description: MCPRemoteProxy configures remote proxy connections for MCP servers
         displayName: MCP Remote Proxy
         kind: MCPRemoteProxy
         name: mcpremoteproxies.toolhive.stacklok.dev
         version: v1alpha1
+        resources:
+          - kind: Deployment
+            version: v1
+          - kind: Service
+            version: v1
+          - kind: Pod
+            version: v1
       - description: MCPServer manages individual Model Context Protocol server instances
         displayName: MCP Server
         kind: MCPServer
         name: mcpservers.toolhive.stacklok.dev
         version: v1alpha1
+        resources:
+          - kind: StatefulSet
+            version: v1
+          - kind: Service
+            version: v1
+          - kind: Pod
+            version: v1
+          - kind: ConfigMap
+            version: v1
+          - kind: Secret
+            version: v1
       - description: MCPToolConfig configures individual tools within MCP servers
         displayName: MCP Tool Config
         kind: MCPToolConfig
         name: mcptoolconfigs.toolhive.stacklok.dev
         version: v1alpha1
+        resources:
+          - kind: ConfigMap
+            version: v1
   description: |
     Toolhive Operator manages Model Context Protocol (MCP) servers and registries on Kubernetes.
 

@@ -591,6 +591,22 @@ clean-images: ## Remove local catalog and index container images
 	-$(CONTAINER_TOOL) rmi $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):latest
 	@echo "✅ Catalog, bundle, and index images removed"
 
+.PHONY: clean-all
+clean-all: clean clean-images download-clean ## Clean all generated artifacts, images, and downloaded files
+	@echo ""
+	@echo "========================================="
+	@echo "✅ Complete cleanup finished"
+	@echo "========================================="
+	@echo ""
+	@echo "Cleaned:"
+	@echo "  ✅ Bundle directory (bundle/)"
+	@echo "  ✅ Catalog directory (catalog/)"
+	@echo "  ✅ Downloaded manifests (downloaded/)"
+	@echo "  ✅ All container images (catalog, bundle, index)"
+	@echo ""
+	@echo "Repository is now clean. Run 'make olm-all' to rebuild everything."
+	@echo ""
+
 ##@ Documentation
 
 .PHONY: show-image-vars

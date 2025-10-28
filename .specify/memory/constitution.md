@@ -1,21 +1,24 @@
 <!--
   Sync Impact Report
   ==================
-  Version Change: 1.1.1 → 1.1.2 (governance policy clarification)
+  Version Change: 1.1.2 → 1.2.0 (new quality assurance principle)
 
   Modified Principles: N/A
 
   Added Sections:
-  - Operator SDK Plugin Policy (under Governance section)
+  - Principle VII: Scorecard Quality Assurance (NON-NEGOTIABLE)
 
   Removed Sections: N/A
 
   Templates Requiring Updates:
-  ✅ plan-template.md - reviewed, no operator-sdk specific checks required
-  ✅ spec-template.md - reviewed, no conflicts
-  ✅ tasks-template.md - reviewed, no conflicts
+  ✅ plan-template.md - reviewed, Constitution Check section includes scorecard validation
+  ✅ spec-template.md - reviewed, no changes required
+  ✅ tasks-template.md - reviewed, includes optional test tasks compatible with scorecard principle
+  ⚠ Makefile - already has scorecard-test target, constitution reference updated
 
-  Follow-up TODOs: None
+  Follow-up TODOs:
+  - Update CI/CD pipelines to include scorecard testing if automated testing is implemented
+  - Consider adding scorecard results to VALIDATION.md documentation
 -->
 
 # Toolhive Operator Metadata Constitution
@@ -67,6 +70,18 @@ A file-based catalog for the Operator Lifecycle Manager (OLM) MUST support one o
 - Flexibility in update graph definitions for complex upgrade scenarios
 - Single catalog serving multiple release channels without duplication
 
+### VII. Scorecard Quality Assurance (NON-NEGOTIABLE)
+
+All OLM bundles MUST pass operator-sdk scorecard validation tests before being considered production-ready. The scorecard test suite validates bundle structure, OLM metadata correctness, CRD validation schemas, and Operator Framework best practices. Failures in scorecard tests indicate bundle defects that could prevent successful deployment via OLM.
+
+**Rationale**: The operator-sdk scorecard is the Operator Framework's official quality gate for operator bundles. Scorecard tests verify:
+- Bundle structure integrity (manifests, metadata, annotations)
+- OLM-specific requirements (install modes, CRD ownership, RBAC completeness)
+- CRD schema validation and resource specifications
+- Operator Framework best practices and compatibility
+
+Passing scorecard tests ensures the operator bundle is compatible with OLM, reduces deployment failures, and maintains compliance with Operator Framework standards. Scorecard failures often indicate subtle configuration errors that would otherwise surface as runtime failures in production environments.
+
 ## Kustomize Build Standards
 
 All kustomize manifests MUST:
@@ -114,5 +129,6 @@ When adding manifests for OpenDataHub integration, developers MUST:
 5. Namespace placement is correct for the overlay
 6. OLM catalog contains valid `olm.package`, `olm.channel`, and `olm.bundle` blobs
 7. operator-sdk commands specify `go.kubebuilder.io/v4` plugin where applicable
+8. `operator-sdk scorecard bundle/` passes all required tests
 
-**Version**: 1.1.2 | **Ratified**: 2025-10-07 | **Last Amended**: 2025-10-21
+**Version**: 1.2.0 | **Ratified**: 2025-10-07 | **Last Amended**: 2025-10-28

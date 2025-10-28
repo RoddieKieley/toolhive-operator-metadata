@@ -497,15 +497,26 @@ index-validate-all: catalog-validate index-olmv0-validate ## Validate both OLMv1
 ##@ Complete OLM Workflow
 
 .PHONY: olm-all
-olm-all: kustomize-validate bundle-validate catalog-validate catalog-build ## Run complete OLM workflow (validate, build catalog)
+olm-all: kustomize-validate bundle bundle-validate catalog catalog-validate catalog-build index-olmv0-build ## Run complete OLM workflow (build and validate everything)
 	@echo ""
 	@echo "========================================="
 	@echo "✅ Complete OLM workflow finished"
 	@echo "========================================="
 	@echo ""
+	@echo "Generated artifacts:"
+	@echo "  ✅ Bundle (bundle/)"
+	@echo "  ✅ OLMv1 Catalog (catalog/)"
+	@echo "  ✅ Catalog Image ($(CATALOG_IMG))"
+	@echo "  ✅ OLMv0 Index Image ($(INDEX_OLMV0_IMG))"
+	@echo ""
 	@echo "Next steps:"
-	@echo "  1. Push catalog image: make catalog-push"
-	@echo "  2. Deploy to cluster: see VALIDATION.md for CatalogSource example"
+	@echo "  Modern OpenShift (4.19+):"
+	@echo "    1. Push catalog: make catalog-push"
+	@echo "    2. Deploy: kubectl apply -f examples/catalogsource-olmv1.yaml"
+	@echo ""
+	@echo "  Legacy OpenShift (4.15-4.18):"
+	@echo "    1. Push index: make index-olmv0-push"
+	@echo "    2. Deploy: kubectl apply -f examples/catalogsource-olmv0.yaml"
 	@echo ""
 
 ##@ Validation & Compliance

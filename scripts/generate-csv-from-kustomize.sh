@@ -34,7 +34,7 @@ metadata:
     alm-examples: |-
       []
     capabilities: Basic Install
-    categories: Developer Tools
+    categories: AI/Machine Learning, Developer Tools, Networking
     containerImage: ghcr.io/stacklok/toolhive/operator:${VERSION}
     description: Kubernetes operator for managing Model Context Protocol (MCP) servers and registries
     operators.operatorframework.io/builder: operator-sdk-v1.41.0

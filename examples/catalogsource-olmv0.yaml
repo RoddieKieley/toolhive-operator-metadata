@@ -12,7 +12,7 @@
 #
 # Prerequisites:
 #   - OpenShift 4.15-4.18 or Kubernetes with OLM v0
-#   - Index image available: quay.io/roddiekieley/toolhive-operator-index:v0.3.11
+#   - Index image available: quay.io/roddiekieley/toolhive-operator-index:v0.4.2
 #   - Index image built using: make index-olmv0-build
 #
 # Usage:
@@ -43,8 +43,8 @@ spec:
 
   # Index image: OLMv0 SQLite-based index (DEPRECATED)
   # This image contains a SQLite database at /database/index.db
-  # The database references the bundle image: quay.io/roddiekieley/toolhive-operator-bundle:v0.3.11
-  image: quay.io/roddiekieley/toolhive-operator-index:v0.3.11
+  # The database references the bundle image: quay.io/roddiekieley/toolhive-operator-bundle:v0.4.2
+  image: quay.io/roddiekieley/toolhive-operator-index:v0.4.2
 
   # Display name shown in OperatorHub (indicates legacy format)
   displayName: Toolhive Operator Catalog (Legacy)

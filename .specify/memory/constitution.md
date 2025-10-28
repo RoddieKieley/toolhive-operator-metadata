@@ -122,13 +122,14 @@ When adding manifests for OpenDataHub integration, developers MUST:
 **Rationale**: The operator-sdk defaults have changed across versions, and this project's structure requires the v4 plugin for compatibility. Explicit plugin specification prevents failures and ensures consistent behavior across development environments.
 
 **Compliance Verification**: All pull requests MUST verify:
-1. `kustomize build config/base` succeeds
-2. `kustomize build config/default` succeeds
-3. CRD files remain unchanged (hash/diff check)
-4. New patches are documented
-5. Namespace placement is correct for the overlay
-6. OLM catalog contains valid `olm.package`, `olm.channel`, and `olm.bundle` blobs
-7. operator-sdk commands specify `go.kubebuilder.io/v4` plugin where applicable
-8. `operator-sdk scorecard bundle/` passes all required tests
+1. Version consistency across all configuration files (`scripts/verify-version-consistency.sh`)
+2. `kustomize build config/base` succeeds
+3. `kustomize build config/default` succeeds
+4. CRD files remain unchanged (hash/diff check)
+5. New patches are documented
+6. Namespace placement is correct for the overlay
+7. OLM catalog contains valid `olm.package`, `olm.channel`, and `olm.bundle` blobs
+8. operator-sdk commands specify `go.kubebuilder.io/v4` plugin where applicable
+9. `operator-sdk scorecard bundle/` passes all required tests
 
-**Version**: 1.2.0 | **Ratified**: 2025-10-07 | **Last Amended**: 2025-10-28
+**Version**: 1.2.1 | **Ratified**: 2025-10-07 | **Last Amended**: 2025-10-28

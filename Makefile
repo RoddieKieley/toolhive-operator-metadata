@@ -541,14 +541,19 @@ constitution-check: kustomize-validate ## Verify constitution compliance
 	@git diff --exit-code config/crd/ && echo "✅ CRDs unchanged" || (echo "❌ CRDs have been modified"; exit 1)
 	@echo "Constitution compliance: ✅ PASSED"
 
+.PHONY: verify-version-consistency
+verify-version-consistency: ## Verify all version references are consistent
+	@scripts/verify-version-consistency.sh $(OPERATOR_TAG)
+
 .PHONY: validate-all
-validate-all: constitution-check bundle-validate bundle-validate-sdk catalog-validate index-olmv0-validate ## Run all validation checks
+validate-all: verify-version-consistency constitution-check bundle-validate bundle-validate-sdk catalog-validate index-olmv0-validate ## Run all validation checks
 	@echo ""
 	@echo "========================================="
 	@echo "✅ All validations passed"
 	@echo "========================================="
 	@echo ""
 	@echo "Validated components:"
+	@echo "  ✅ Version consistency across all files"
 	@echo "  ✅ Constitution compliance (kustomize builds, CRD immutability)"
 	@echo "  ✅ OLMv0 Bundle structure and manifests"
 	@echo "  ✅ OLMv1 FBC Catalog"

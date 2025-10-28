@@ -67,7 +67,7 @@ bundle/
 **Additional Quality Fields** ✅
 - `spec.installModes`: All four modes properly configured
 - `metadata.annotations.capabilities`: Basic Install
-- `metadata.annotations.categories`: AI/ML, Developer Tools
+- `metadata.annotations.categories`: AI/Machine Learning, Developer Tools, Networking
 - Resource descriptors for both CRDs with proper status conditions
 
 ### Bundle Metadata Validation

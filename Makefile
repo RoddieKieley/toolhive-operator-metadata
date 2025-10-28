@@ -34,6 +34,13 @@ INDEX_OLMV0_IMG := $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):$(INDEX_TAG)
 OPM_MODE ?= semver
 CONTAINER_TOOL ?= podman
 
+# Upstream operator image configuration
+OPERATOR_REGISTRY ?= ghcr.io
+OPERATOR_ORG ?= stacklok/toolhive
+OPERATOR_NAME ?= operator
+OPERATOR_TAG ?= v0.4.2
+OPERATOR_IMG := $(OPERATOR_REGISTRY)/$(OPERATOR_ORG)/$(OPERATOR_NAME):$(OPERATOR_TAG)
+
 .PHONY: help
 help: ## Display this help message
 	@echo "Toolhive Operator Metadata - Available Targets:"
@@ -75,15 +82,40 @@ kustomize-validate: ## Validate both kustomize builds (constitution compliance)
 	@echo "Validating config/base..."
 	@kustomize build config/base > /dev/null && echo "✅ config/base build passed"
 
+##@ Download Targets
+
+.PHONY: download
+download: ## Generate manifests from kustomize and create downloaded directory structure
+	@echo "Generating manifests for version $(OPERATOR_TAG)..."
+	@mkdir -p downloaded/toolhive-operator/$(OPERATOR_TAG)
+	@echo "Copying CRD files from config/crd/bases/..."
+	@cp config/crd/bases/*.yaml downloaded/toolhive-operator/$(OPERATOR_TAG)/
+	@echo "Generating ClusterServiceVersion from kustomize..."
+	@scripts/generate-csv-from-kustomize.sh $(OPERATOR_TAG) downloaded/toolhive-operator/$(OPERATOR_TAG)/toolhive-operator.clusterserviceversion.yaml
+	@if [ -f "downloaded/toolhive-operator/$(OPERATOR_TAG)/toolhive-operator.clusterserviceversion.yaml" ]; then \
+		echo "✅ Manifests generated successfully"; \
+		echo "Contents:"; \
+		ls -lh downloaded/toolhive-operator/$(OPERATOR_TAG)/; \
+	else \
+		echo "❌ Error: CSV file not found after generation"; \
+		exit 1; \
+	fi
+
+.PHONY: download-clean
+download-clean: ## Remove downloaded manifests
+	@echo "Removing downloaded manifests..."
+	@rm -rf downloaded/
+	@echo "✅ Downloaded manifests removed"
+
 ##@ OLM Bundle Targets
 
 .PHONY: bundle
-bundle: ## Generate OLM bundle (CSV, CRDs, metadata) with OpenShift security patches
+bundle: download ## Generate OLM bundle (CSV, CRDs, metadata) with OpenShift security patches
 	@echo "Generating OLM bundle from downloaded operator files..."
 	@mkdir -p bundle/manifests bundle/metadata
-	@if [ -d "downloaded/toolhive-operator/0.4.2" ]; then \
-		echo "Copying manifests from downloaded/toolhive-operator/0.4.2/..."; \
-		cp downloaded/toolhive-operator/0.4.2/*.yaml bundle/manifests/; \
+	@if [ -d "downloaded/toolhive-operator/$(OPERATOR_TAG)" ]; then \
+		echo "Copying manifests from downloaded/toolhive-operator/$(OPERATOR_TAG)/..."; \
+		cp downloaded/toolhive-operator/$(OPERATOR_TAG)/*.yaml bundle/manifests/; \
 		echo "Applying OpenShift security patches to CSV..."; \
 		yq eval 'del(.spec.install.spec.deployments[0].spec.template.spec.containers[0].securityContext.runAsUser)' -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml; \
 		yq eval '.spec.install.spec.deployments[0].spec.template.spec.securityContext.seccompProfile = {"type": "RuntimeDefault"}' -i bundle/manifests/toolhive-operator.clusterserviceversion.yaml; \
@@ -130,8 +162,8 @@ bundle: ## Generate OLM bundle (CSV, CRDs, metadata) with OpenShift security pat
 		echo "Contents:"; \
 		ls -lh bundle/manifests/ bundle/metadata/; \
 	else \
-		echo "❌ Error: downloaded/toolhive-operator/0.4.2/ directory not found"; \
-		echo "Run download script first or check directory structure"; \
+		echo "❌ Error: downloaded/toolhive-operator/$(OPERATOR_TAG)/ directory not found"; \
+		echo "This should not happen as 'download' is a prerequisite for bundle."; \
 		exit 1; \
 	fi
 
@@ -569,6 +601,13 @@ show-image-vars: ## Display effective image variable values (for debugging overr
 	@echo "  INDEX_NAME       = $(INDEX_NAME)"
 	@echo "  INDEX_TAG        = $(INDEX_TAG)"
 	@echo "  INDEX_OLMV0_IMG  = $(INDEX_OLMV0_IMG)"
+	@echo ""
+	@echo "Upstream Operator Image:"
+	@echo "  OPERATOR_REGISTRY = $(OPERATOR_REGISTRY)"
+	@echo "  OPERATOR_ORG      = $(OPERATOR_ORG)"
+	@echo "  OPERATOR_NAME     = $(OPERATOR_NAME)"
+	@echo "  OPERATOR_TAG      = $(OPERATOR_TAG)"
+	@echo "  OPERATOR_IMG      = $(OPERATOR_IMG)"
 	@echo ""
 	@echo "Override example:"
 	@echo "  make catalog-build CATALOG_REGISTRY=quay.io CATALOG_ORG=myuser"

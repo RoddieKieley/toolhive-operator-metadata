@@ -138,18 +138,103 @@ else
 fi
 
 echo ""
+echo "Checking Image Base URLs..."
+echo "----------------------------"
+
+# Define expected base URLs for production registry
+EXPECTED_BUNDLE_BASE="ghcr.io/stacklok/toolhive/operator-bundle"
+EXPECTED_CATALOG_BASE="ghcr.io/stacklok/toolhive/operator-catalog"
+EXPECTED_INDEX_BASE="ghcr.io/stacklok/toolhive/operator-index"
+
+# Function to check image base URL
+check_image_base() {
+    local description="$1"
+    local image_url="$2"
+    local expected_base="$3"
+
+    # Extract base URL (everything before the tag)
+    local image_base=$(echo "$image_url" | sed 's/:v\?[0-9]\+\.[0-9]\+\.[0-9]\+$//' | sed 's/:latest$//')
+
+    if [ "$image_base" = "$expected_base" ]; then
+        echo "✅ $description: $image_base"
+    else
+        echo "❌ $description: $image_base (expected: $expected_base)"
+        EXIT_CODE=1
+    fi
+}
+
+# Check Makefile image base URLs
+BUNDLE_IMG_BASE=$(grep "^BUNDLE_REGISTRY\|^BUNDLE_ORG\|^BUNDLE_NAME" Makefile | grep -v "^#" | cut -d'=' -f2 | sed 's/[? ]//g')
+BUNDLE_REGISTRY=$(echo "$BUNDLE_IMG_BASE" | sed -n '1p')
+BUNDLE_ORG=$(echo "$BUNDLE_IMG_BASE" | sed -n '2p')
+BUNDLE_NAME=$(echo "$BUNDLE_IMG_BASE" | sed -n '3p')
+if [ -n "$BUNDLE_REGISTRY" ] && [ -n "$BUNDLE_ORG" ] && [ -n "$BUNDLE_NAME" ]; then
+    BUNDLE_FULL="$BUNDLE_REGISTRY/$BUNDLE_ORG/$BUNDLE_NAME"
+    check_image_base "  Bundle Base URL (Makefile)" "$BUNDLE_FULL" "$EXPECTED_BUNDLE_BASE"
+fi
+
+CATALOG_IMG_BASE=$(grep "^CATALOG_REGISTRY\|^CATALOG_ORG\|^CATALOG_NAME" Makefile | grep -v "^#" | cut -d'=' -f2 | sed 's/[? ]//g')
+CATALOG_REGISTRY=$(echo "$CATALOG_IMG_BASE" | sed -n '1p')
+CATALOG_ORG=$(echo "$CATALOG_IMG_BASE" | sed -n '2p')
+CATALOG_NAME=$(echo "$CATALOG_IMG_BASE" | sed -n '3p')
+if [ -n "$CATALOG_REGISTRY" ] && [ -n "$CATALOG_ORG" ] && [ -n "$CATALOG_NAME" ]; then
+    CATALOG_FULL="$CATALOG_REGISTRY/$CATALOG_ORG/$CATALOG_NAME"
+    check_image_base "  Catalog Base URL (Makefile)" "$CATALOG_FULL" "$EXPECTED_CATALOG_BASE"
+fi
+
+INDEX_IMG_BASE=$(grep "^INDEX_REGISTRY\|^INDEX_ORG\|^INDEX_NAME" Makefile | grep -v "^#" | cut -d'=' -f2 | sed 's/[? ]//g')
+INDEX_REGISTRY=$(echo "$INDEX_IMG_BASE" | sed -n '1p')
+INDEX_ORG=$(echo "$INDEX_IMG_BASE" | sed -n '2p')
+INDEX_NAME=$(echo "$INDEX_IMG_BASE" | sed -n '3p')
+if [ -n "$INDEX_REGISTRY" ] && [ -n "$INDEX_ORG" ] && [ -n "$INDEX_NAME" ]; then
+    INDEX_FULL="$INDEX_REGISTRY/$INDEX_ORG/$INDEX_NAME"
+    check_image_base "  Index Base URL (Makefile)" "$INDEX_FULL" "$EXPECTED_INDEX_BASE"
+fi
+
+# Check bundle CSV containerImage if bundle exists
+if [ -f "bundle/manifests/toolhive-operator.clusterserviceversion.yaml" ]; then
+    CSV_CONTAINER_IMAGE=$(yq eval '.spec.relatedImages[] | select(.name == "toolhive-operator-bundle") | .image' \
+        bundle/manifests/toolhive-operator.clusterserviceversion.yaml 2>/dev/null || echo "")
+
+    # If not found in relatedImages, check annotations
+    if [ -z "$CSV_CONTAINER_IMAGE" ]; then
+        CSV_CONTAINER_IMAGE=$(yq eval '.metadata.annotations."containerImage"' \
+            bundle/manifests/toolhive-operator.clusterserviceversion.yaml 2>/dev/null || echo "")
+    fi
+
+    if [ -n "$CSV_CONTAINER_IMAGE" ] && [ "$CSV_CONTAINER_IMAGE" != "null" ]; then
+        # For bundle CSV, we expect operator image not bundle image
+        # Skip this check as containerImage refers to the operator, not the bundle
+        : # no-op
+    fi
+fi
+
+echo ""
 echo "========================================"
 if [ $EXIT_CODE -eq 0 ]; then
     echo "✅ All version references are consistent"
+    echo "✅ All image base URLs are correct"
     echo "========================================"
 else
-    echo "❌ Version inconsistencies found"
+    echo "❌ Version inconsistencies or incorrect image URLs found"
     echo "========================================"
     echo ""
-    echo "To fix inconsistencies, run:"
+    echo "To fix version inconsistencies, run:"
     echo "  make upgrade VERSION=$EXPECTED_VERSION"
     echo ""
-    echo "Or manually update the files listed above."
+    echo "To fix image URLs, update the following in Makefile:"
+    echo "  BUNDLE_REGISTRY = ghcr.io"
+    echo "  BUNDLE_ORG = stacklok/toolhive"
+    echo "  BUNDLE_NAME = operator-bundle"
+    echo ""
+    echo "  CATALOG_REGISTRY = ghcr.io"
+    echo "  CATALOG_ORG = stacklok/toolhive"
+    echo "  CATALOG_NAME = operator-catalog"
+    echo ""
+    echo "  INDEX_REGISTRY = ghcr.io"
+    echo "  INDEX_ORG = stacklok/toolhive"
+    echo "  INDEX_NAME = operator-index"
+    echo ""
 fi
 echo ""
 

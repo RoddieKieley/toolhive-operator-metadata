@@ -417,12 +417,27 @@ index-olmv0-build: ## Build OLMv0 index image (SQLite-based, deprecated)
 	@echo "⚠️  Building OLMv0 index image (SQLite-based, deprecated)"
 	@echo "   Use only for legacy OpenShift 4.15-4.18 compatibility"
 	@echo ""
+	@echo "Checking for local bundle image: $(BUNDLE_IMG)"
+	@if $(CONTAINER_TOOL) inspect $(BUNDLE_IMG) >/dev/null 2>&1; then \
+		echo "  ✓ Bundle image found locally"; \
+	else \
+		echo "  ✗ Bundle image not found locally"; \
+		echo "  Pulling bundle image from registry..."; \
+		$(CONTAINER_TOOL) pull $(BUNDLE_IMG) || { \
+			echo "  ❌ Failed to pull bundle image"; \
+			echo "  Please build the bundle image first with: make bundle-build"; \
+			exit 1; \
+		}; \
+		echo "  ✓ Bundle image pulled successfully"; \
+	fi
+	@echo ""
 	@echo "Building index referencing bundle: $(BUNDLE_IMG)"
 	opm index add \
 		--bundles $(BUNDLE_IMG) \
 		--tag $(INDEX_OLMV0_IMG) \
 		--mode $(OPM_MODE) \
-		--container-tool $(CONTAINER_TOOL)
+		--container-tool $(CONTAINER_TOOL) \
+		--permissive
 	@echo ""
 	@echo "✅ OLMv0 index image built: $(INDEX_OLMV0_IMG)"
 	@$(CONTAINER_TOOL) images $(INDEX_OLMV0_IMG)

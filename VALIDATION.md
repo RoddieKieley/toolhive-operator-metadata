@@ -103,7 +103,7 @@ All 6 CRDs copied from config/crd/bases/ without modification (Constitution III 
 
 ### Build Result
 ```bash
-podman build -f Containerfile.catalog -t quay.io/roddiekieley/toolhive-operator-catalog:v0.4.2 .
+podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/operator-catalog:v0.4.2 .
 ```
 ✅ **SUCCESS** - Image built: 62aaaf0f6bdf
 
@@ -114,8 +114,8 @@ podman build -f Containerfile.catalog -t quay.io/roddiekieley/toolhive-operator-
 - **Labels**: All required OLM and OCI labels present
 
 ### Image Tags
-- `quay.io/roddiekieley/toolhive-operator-catalog:v0.3.11` ✅
-- `quay.io/roddiekieley/toolhive-operator-catalog:latest` ✅
+- `ghcr.io/stacklok/toolhive/operator-catalog:v0.4.2` ✅
+- `ghcr.io/stacklok/toolhive/operator-catalog:latest` ✅
 
 ## Referential Integrity Validation
 
@@ -259,8 +259,8 @@ The bundle and catalog are **ready for production distribution** and deployment 
 
 1. **Push catalog image to registry** (when ready for distribution):
    ```bash
-   podman push quay.io/roddiekieley/toolhive-operator-catalog:v0.3.11
-   podman push quay.io/roddiekieley/toolhive-operator-catalog:latest
+   podman push ghcr.io/stacklok/toolhive/operator-catalog:v0.4.2
+   podman push ghcr.io/stacklok/toolhive/operator-catalog:latest
    ```
 
 2. **Deploy to cluster** using CatalogSource:
@@ -272,7 +272,7 @@ The bundle and catalog are **ready for production distribution** and deployment 
      namespace: olm
    spec:
      sourceType: grpc
-     image: quay.io/roddiekieley/toolhive-operator-catalog:v0.3.11
+     image: ghcr.io/stacklok/toolhive/operator-catalog:v0.4.2
    ```
 
 3. **Install operator** using Subscription:

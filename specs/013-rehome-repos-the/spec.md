@@ -3,7 +3,7 @@
 **Feature Branch**: `013-rehome-repos-the`
 **Created**: 2025-11-03
 **Status**: Draft
-**Input**: User description: "Rehome repos. The git repository home of this project has changed. It is now https://github.com/stacklok/toolhive-operator-metadata. Now the destination for the container images produced by this project can be updated to the production destination with a base url of https://ghcr.io/stacklok/toolhive/. With this base url the new destinations for the bundle, index, and catalog container images are respectively: bundle: https://ghcr.io/stacklok/toolhive/bundle, index: https://ghcr.io/stacklok/toolhive/index, catalog: https://ghcr.io/stacklok/toolhive/catalog. The project requires updating to take the new git repository location and container image destinations into account."
+**Input**: User description: "Rehome repos. The git repository home of this project has changed. It is now https://github.com/stacklok/toolhive-operator-metadata. Now the destination for the container images produced by this project can be updated to the production destination with a base url of https://ghcr.io/stacklok/toolhive/. With this base url the new destinations for the bundle, index, and catalog container images are respectively: bundle: https://ghcr.io/stacklok/toolhive/operator-bundle, index: https://ghcr.io/stacklok/toolhive/operator-index, catalog: https://ghcr.io/stacklok/toolhive/operator-catalog. The project requires updating to take the new git repository location and container image destinations into account."
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -13,13 +13,13 @@ A developer builds OLM artifacts (bundle, catalog, index) and expects them to us
 
 **Why this priority**: Container image references are embedded in multiple build artifacts and manifests. Incorrect references will cause deployment failures in production environments. This is the core deliverable of the rehoming effort.
 
-**Independent Test**: Can be fully tested by running `make olm-all` and verifying that all generated manifests (bundle CSV, catalog FBC, index) contain only the new production image URLs (`ghcr.io/stacklok/toolhive/bundle`, `ghcr.io/stacklok/toolhive/catalog`, `ghcr.io/stacklok/toolhive/index`).
+**Independent Test**: Can be fully tested by running `make olm-all` and verifying that all generated manifests (bundle CSV, catalog FBC, index) contain only the new production image URLs (`ghcr.io/stacklok/toolhive/operator-bundle`, `ghcr.io/stacklok/toolhive/operator-catalog`, `ghcr.io/stacklok/toolhive/operator-index`).
 
 **Acceptance Scenarios**:
 
-1. **Given** the Makefile defines image destinations, **When** a developer runs `make bundle`, **Then** the generated ClusterServiceVersion contains bundle image reference `ghcr.io/stacklok/toolhive/bundle:v[VERSION]`
-2. **Given** the project builds a catalog, **When** a developer runs `make catalog`, **Then** the generated file-based catalog references `ghcr.io/stacklok/toolhive/bundle:v[VERSION]`
-3. **Given** the project builds an index for OLMv0, **When** a developer runs `make index-olmv0-build`, **Then** the index image is tagged as `ghcr.io/stacklok/toolhive/index:v[VERSION]`
+1. **Given** the Makefile defines image destinations, **When** a developer runs `make bundle`, **Then** the generated ClusterServiceVersion contains bundle image reference `ghcr.io/stacklok/toolhive/operator-bundle:v[VERSION]`
+2. **Given** the project builds a catalog, **When** a developer runs `make catalog`, **Then** the generated file-based catalog references `ghcr.io/stacklok/toolhive/operator-bundle:v[VERSION]`
+3. **Given** the project builds an index for OLMv0, **When** a developer runs `make index-olmv0-build`, **Then** the index image is tagged as `ghcr.io/stacklok/toolhive/operator-index:v[VERSION]`
 4. **Given** all build targets complete, **When** a developer inspects all generated artifacts, **Then** no references to old/development image locations remain
 
 ---
@@ -68,9 +68,9 @@ A developer runs version consistency checks and confirms that all image referenc
 ### Functional Requirements
 
 - **FR-001**: All Makefile image variables MUST reference the production container registry base URL `ghcr.io/stacklok/toolhive/`
-- **FR-002**: The bundle image destination MUST be `ghcr.io/stacklok/toolhive/bundle`
-- **FR-003**: The catalog image destination MUST be `ghcr.io/stacklok/toolhive/catalog`
-- **FR-004**: The index image destination MUST be `ghcr.io/stacklok/toolhive/index`
+- **FR-002**: The bundle image destination MUST be `ghcr.io/stacklok/toolhive/operator-bundle`
+- **FR-003**: The catalog image destination MUST be `ghcr.io/stacklok/toolhive/operator-catalog`
+- **FR-004**: The index image destination MUST be `ghcr.io/stacklok/toolhive/operator-index`
 - **FR-005**: All documentation files MUST reference the repository location as `https://github.com/stacklok/toolhive-operator-metadata`
 - **FR-006**: Generated ClusterServiceVersion MUST contain the correct bundle image reference using production URL
 - **FR-007**: Generated file-based catalog MUST reference bundle images using production URL
@@ -82,7 +82,7 @@ A developer runs version consistency checks and confirms that all image referenc
 
 ### Key Entities
 
-- **Container Image Reference**: A URL pattern identifying where container images are stored and retrieved from, consisting of registry host, organization/project path, image name, and version tag (e.g., `ghcr.io/stacklok/toolhive/bundle:v0.4.2`)
+- **Container Image Reference**: A URL pattern identifying where container images are stored and retrieved from, consisting of registry host, organization/project path, image name, and version tag (e.g., `ghcr.io/stacklok/toolhive/operator-bundle:v0.4.2`)
 - **Repository Reference**: A URL identifying the git repository location, used in documentation, clone commands, and metadata (e.g., `https://github.com/stacklok/toolhive-operator-metadata`)
 - **Makefile Image Variables**: Configuration variables in the Makefile that define base URLs, image names, and complete image references used throughout the build process
 - **Generated Artifacts**: OLM manifests (CSV, FBC catalog, index) that embed container image references and must reflect production URLs

@@ -197,7 +197,8 @@ $(echo "$DEPLOYMENT_YAML" | yq eval '.spec' - | sed 's/^/            /')
     - name: Discord
       url: https://discord.gg/stacklok
   maintainers:
-      name: Stacklok
+    - name: Stacklok
+      email: hello@stacklok.com
   maturity: alpha
   minKubeVersion: 1.27.0
   provider:

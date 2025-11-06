@@ -305,8 +305,8 @@ make check-icon-deps
 When maintaining multiple operator versions in the catalog:
 
 ```bash
-# Build v0.2.17 bundle
-make bundle BUNDLE_ICON=icons/v0.2.17-icon.svg
+# Build v0.4.2 bundle
+make bundle BUNDLE_ICON=icons/default-icon.svg
 
 # Update catalog with new bundle
 make catalog

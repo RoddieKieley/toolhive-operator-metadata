@@ -4,13 +4,13 @@
 # and metadata for deployment via OLMv0 on legacy Kubernetes/OpenShift clusters.
 #
 # Build command:
-#   podman build -f Containerfile.bundle -t quay.io/roddiekieley/toolhive-operator-bundle:v0.3.11 .
+#   podman build -f Containerfile.bundle -t ghcr.io/stacklok/toolhive/operator-bundle:v0.4.2 .
 #
 # Validation command (before build):
 #   /opt/operator-sdk/bin/operator-sdk --plugins go.kubebuilder.io/v4 bundle validate ./bundle --select-optional suite=operatorframework
 #
 # Validation command (after build):
-#   /opt/operator-sdk/bin/operator-sdk --plugins go.kubebuilder.io/v4 bundle validate quay.io/roddiekieley/toolhive-operator-bundle:v0.3.11
+#   /opt/operator-sdk/bin/operator-sdk --plugins go.kubebuilder.io/v4 bundle validate ghcr.io/stacklok/toolhive/operator-bundle:v0.4.2
 
 # Use scratch base image for minimal size and security
 # Bundle images are data-only (no executables needed)
@@ -35,8 +35,8 @@ LABEL operators.operatorframework.io.bundle.channel.default.v1=fast
 LABEL org.opencontainers.image.title="ToolHive Operator Bundle"
 LABEL org.opencontainers.image.description="OLMv0 Bundle for ToolHive Operator (manages MCP servers and registries)"
 LABEL org.opencontainers.image.vendor="Stacklok"
-LABEL org.opencontainers.image.source="https://github.com/RHEcosystemAppEng/toolhive-operator-metadata"
-LABEL org.opencontainers.image.version="v0.3.11"
+LABEL org.opencontainers.image.source="https://github.com/stacklok/toolhive-operator-metadata"
+LABEL org.opencontainers.image.version="v0.4.2"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 
 # OpenShift-specific label indicating supported versions

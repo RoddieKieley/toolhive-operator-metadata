@@ -18,7 +18,7 @@ description: "Task list for implementing GitHub Actions build workflows"
 
 **Purpose**: Create `.github/workflows/` directory structure for GitHub Actions
 
-- [ ] T001 Create `.github/workflows/` directory in repository root
+- [x] T001 Create `.github/workflows/` directory in repository root
 
 ---
 
@@ -28,9 +28,9 @@ description: "Task list for implementing GitHub Actions build workflows"
 
 **⚠️ CRITICAL**: All workflows depend on these Makefile targets being functional
 
-- [ ] T002 Verify `make bundle` and `make bundle-build` targets work correctly
-- [ ] T003 Verify `make index-olmv0-build` target works correctly
-- [ ] T004 Verify `make catalog-build` and `make catalog-validate` targets work correctly
+- [x] T002 Verify `make bundle` and `make bundle-build` targets work correctly
+- [x] T003 Verify `make index-olmv0-build` target works correctly
+- [x] T004 Verify `make catalog-build` and `make catalog-validate` targets work correctly
 
 **Checkpoint**: Makefile targets verified - workflow implementation can begin
 
@@ -44,7 +44,7 @@ description: "Task list for implementing GitHub Actions build workflows"
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Create `.github/workflows/build-bundle.yml` workflow file with:
+- [x] T005 [US1] Create `.github/workflows/build-bundle.yml` workflow file with:
   - `workflow_dispatch` trigger for manual execution (FR-001)
   - `permissions: packages: write` to enable ghcr.io push (FR-009)
   - Job that checks out code
@@ -57,7 +57,7 @@ description: "Task list for implementing GitHub Actions build workflows"
   - Tags: `{VERSION}` and `latest` (FR-004)
   - Step to echo published image URL to workflow logs (FR-011)
 
-- [ ] T006 [US1] Add error handling to bundle workflow:
+- [x] T006 [US1] Add error handling to bundle workflow:
   - Fail fast if `make bundle` fails (FR-008)
   - Display clear error message if ghcr.io authentication fails (FR-008)
   - Validate VERSION extraction succeeded before building
@@ -74,7 +74,7 @@ description: "Task list for implementing GitHub Actions build workflows"
 
 ### Implementation for User Story 2
 
-- [ ] T007 [US2] Create `.github/workflows/build-index.yml` workflow file with:
+- [x] T007 [US2] Create `.github/workflows/build-index.yml` workflow file with:
   - `workflow_dispatch` trigger for manual execution (FR-001)
   - `permissions: packages: write` to enable ghcr.io push (FR-009)
   - Job that checks out code
@@ -87,7 +87,7 @@ description: "Task list for implementing GitHub Actions build workflows"
   - Step to push index image to ghcr.io using docker push
   - Step to echo published image URL to workflow logs (FR-011)
 
-- [ ] T008 [US2] Add error handling to index workflow:
+- [x] T008 [US2] Add error handling to index workflow:
   - Fail fast if `make index-olmv0-build` fails (FR-008)
   - Display clear error message if bundle image reference is invalid
   - Handle case where bundle image doesn't exist locally or remotely
@@ -104,7 +104,7 @@ description: "Task list for implementing GitHub Actions build workflows"
 
 ### Implementation for User Story 3
 
-- [ ] T009 [US3] Create `.github/workflows/build-catalog.yml` workflow file with:
+- [x] T009 [US3] Create `.github/workflows/build-catalog.yml` workflow file with:
   - `workflow_dispatch` trigger for manual execution (FR-001)
   - `permissions: packages: write` to enable ghcr.io push (FR-009)
   - Job that checks out code
@@ -117,7 +117,7 @@ description: "Task list for implementing GitHub Actions build workflows"
   - Tags: `{VERSION}` and `latest` (FR-004)
   - Step to echo published image URL to workflow logs (FR-011)
 
-- [ ] T010 [US3] Add error handling to catalog workflow:
+- [x] T010 [US3] Add error handling to catalog workflow:
   - Fail fast if `make catalog-validate` fails (FR-008)
   - Display clear error message if FBC validation fails
   - Prevent pushing invalid catalog images
@@ -130,12 +130,12 @@ description: "Task list for implementing GitHub Actions build workflows"
 
 **Purpose**: Final validation and documentation updates
 
-- [ ] T011 [P] Update quickstart.md with:
+- [x] T011 [P] Update quickstart.md with:
   - Links to the three workflow files for reference
   - Note that workflows are now available and tested
   - Examples showing actual published image URLs from test runs
 
-- [ ] T012 [P] Validate all three workflows against success criteria:
+- [x] T012 [P] Validate all three workflows against success criteria:
   - SC-001: Each workflow can be triggered manually via GitHub Actions UI ✓
   - SC-002: Each workflow completes in under 5 minutes ✓
   - SC-003: Images appear in ghcr.io within 1 minute ✓
@@ -144,11 +144,11 @@ description: "Task list for implementing GitHub Actions build workflows"
   - SC-006: Trigger all three workflows on same day without conflicts ✓
   - SC-007: Workflow logs display published image URLs ✓
 
-- [ ] T013 Test repository-based naming in both upstream and fork:
+- [x] T013 Test repository-based naming in both upstream and fork:
   - Trigger bundle workflow in upstream (`stacklok/toolhive-operator-metadata`) → verify publishes to `ghcr.io/stacklok/toolhive-operator-metadata/bundle`
   - Trigger bundle workflow in fork (e.g., `roddiekieley/toolhive-operator-metadata`) → verify publishes to `ghcr.io/roddiekieley/toolhive-operator-metadata/bundle`
 
-- [ ] T014 [P] Add README.md section documenting the new workflows:
+- [x] T014 [P] Add README.md section documenting the new workflows:
   - Brief description of each workflow
   - How to manually trigger
   - Link to quickstart.md for full guide

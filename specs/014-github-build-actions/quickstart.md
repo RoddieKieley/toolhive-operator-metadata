@@ -10,9 +10,11 @@ This guide documents how to use the GitHub Actions workflows to build and publis
 
 ## Workflows Available
 
-1. **build-bundle.yml** - Builds and pushes bundle image (required for all OLM versions)
-2. **build-index.yml** - Builds and pushes OLMv0 index image (legacy OpenShift 4.15-4.18)
-3. **build-catalog.yml** - Builds and pushes OLMv1 catalog image (modern OpenShift 4.19+)
+All workflows are now implemented and ready for use:
+
+1. **[build-bundle.yml](../../.github/workflows/build-bundle.yml)** - Builds and pushes bundle image (required for all OLM versions)
+2. **[build-index.yml](../../.github/workflows/build-index.yml)** - Builds and pushes OLMv0 index image (legacy OpenShift 4.15-4.18)
+3. **[build-catalog.yml](../../.github/workflows/build-catalog.yml)** - Builds and pushes OLMv1 catalog image (modern OpenShift 4.19+)
 
 ## Prerequisites
 

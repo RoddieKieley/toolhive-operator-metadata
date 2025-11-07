@@ -1,0 +1,90 @@
+name: Build and Publish Index Image (OLMv0)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  build-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up dependencies
+        run: |
+          # Install opm (Operator Package Manager) for index creation
+          OPM_VERSION=v1.35.0
+          curl -LO https://github.com/operator-framework/operator-registry/releases/download/${OPM_VERSION}/linux-amd64-opm
+          sudo mv linux-amd64-opm /usr/local/bin/opm
+          sudo chmod +x /usr/local/bin/opm
+          opm version
+
+      - name: Extract version from Makefile
+        id: version
+        run: |
+          VERSION=$(grep "^INDEX_TAG" Makefile | cut -d'=' -f2 | tr -d ' ')
+          BUNDLE_TAG=$(grep "^BUNDLE_TAG" Makefile | cut -d'=' -f2 | tr -d ' ')
+          if [ -z "$VERSION" ]; then
+            echo "❌ ERROR: Failed to extract VERSION from Makefile"
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "BUNDLE_TAG=$BUNDLE_TAG" >> $GITHUB_OUTPUT
+          echo "✅ Extracted VERSION: $VERSION"
+          echo "✅ Extracted BUNDLE_TAG: $BUNDLE_TAG"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build OLMv0 index image
+        run: |
+          echo "🔨 Building OLMv0 index image (SQLite-based, for legacy OpenShift 4.15-4.18)..."
+
+          # Override image variables to use repository-based naming
+          export BUNDLE_IMG="ghcr.io/${{ github.repository }}/bundle:${{ steps.version.outputs.BUNDLE_TAG }}"
+          export INDEX_OLMV0_IMG="ghcr.io/${{ github.repository }}/index:${{ steps.version.outputs.VERSION }}"
+
+          echo "  Bundle reference: $BUNDLE_IMG"
+          echo "  Index target: $INDEX_OLMV0_IMG"
+
+          make index-olmv0-build BUNDLE_IMG="$BUNDLE_IMG" INDEX_OLMV0_IMG="$INDEX_OLMV0_IMG"
+
+          if [ $? -ne 0 ]; then
+            echo "❌ ERROR: 'make index-olmv0-build' failed"
+            echo "This may occur if the bundle image doesn't exist locally or remotely."
+            echo "The Makefile uses --permissive flag to allow local images."
+            exit 1
+          fi
+          echo "✅ Index image built successfully"
+
+      - name: Tag and push index image
+        run: |
+          # Tag with 'latest' in addition to version tag
+          docker tag "ghcr.io/${{ github.repository }}/index:${{ steps.version.outputs.VERSION }}" \
+                     "ghcr.io/${{ github.repository }}/index:latest"
+
+          # Push both tags
+          docker push "ghcr.io/${{ github.repository }}/index:${{ steps.version.outputs.VERSION }}"
+          docker push "ghcr.io/${{ github.repository }}/index:latest"
+
+          echo "✅ Index image pushed successfully"
+
+      - name: Display published image URLs
+        run: |
+          echo "✅ Index image published successfully!"
+          echo ""
+          echo "📍 Published to:"
+          echo "   ghcr.io/${{ github.repository }}/index:${{ steps.version.outputs.VERSION }}"
+          echo "   ghcr.io/${{ github.repository }}/index:latest"
+          echo ""
+          echo "🔗 View package: https://github.com/${{ github.repository }}/pkgs/container/index"
+          echo ""
+          echo "⚠️  Note: This is an OLMv0 SQLite-based index for legacy OpenShift 4.15-4.18 compatibility."

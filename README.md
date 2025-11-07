@@ -9,6 +9,27 @@ This repository contains:
 - **OLMv1 File-Based Catalog (FBC)** for operator distribution via Operator Lifecycle Manager
 - **Bundle metadata** following Operator Framework standards
 
+## GitHub Actions Workflows
+
+Automated container image builds are available via GitHub Actions for bundle, index, and catalog images. All workflows publish to `ghcr.io/{owner}/{repo}/{type}` with repository-based naming.
+
+**Available Workflows**:
+- **Bundle Build** - Generates and publishes OLM bundle image (required for all OLM versions)
+- **Index Build (OLMv0)** - Publishes SQLite-based index for legacy OpenShift 4.15-4.18
+- **Catalog Build (OLMv1)** - Publishes File-Based Catalog for modern OpenShift 4.19+
+
+**Manual Trigger**:
+1. Go to [Actions tab](../../actions)
+2. Select the desired workflow
+3. Click "Run workflow" → Choose branch → Run
+
+**Published Images**:
+- Bundle: `ghcr.io/stacklok/toolhive-operator-metadata/bundle:v0.4.2`
+- Index: `ghcr.io/stacklok/toolhive-operator-metadata/index:v0.4.2`
+- Catalog: `ghcr.io/stacklok/toolhive-operator-metadata/catalog:v0.4.2`
+
+For detailed workflow usage and troubleshooting, see [specs/014-github-build-actions/quickstart.md](specs/014-github-build-actions/quickstart.md).
+
 ## Quick Start
 
 ### Prerequisites

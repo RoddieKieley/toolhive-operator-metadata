@@ -142,9 +142,9 @@ echo "Checking Image Base URLs..."
 echo "----------------------------"
 
 # Define expected base URLs for production registry
-EXPECTED_BUNDLE_BASE="ghcr.io/stacklok/toolhive/operator-bundle"
-EXPECTED_CATALOG_BASE="ghcr.io/stacklok/toolhive/operator-catalog"
-EXPECTED_INDEX_BASE="ghcr.io/stacklok/toolhive/operator-index"
+EXPECTED_BUNDLE_BASE="ghcr.io/stacklok/toolhive-operator-metadata/bundle"
+EXPECTED_CATALOG_BASE="ghcr.io/stacklok/toolhive-operator-metadata/catalog"
+EXPECTED_INDEX_BASE="ghcr.io/stacklok/toolhive-operator-metadata/index"
 
 # Function to check image base URL
 check_image_base() {
@@ -224,16 +224,16 @@ else
     echo ""
     echo "To fix image URLs, update the following in Makefile:"
     echo "  BUNDLE_REGISTRY = ghcr.io"
-    echo "  BUNDLE_ORG = stacklok/toolhive"
-    echo "  BUNDLE_NAME = operator-bundle"
+    echo "  BUNDLE_ORG = stacklok/toolhive-operator-metadata"
+    echo "  BUNDLE_NAME = bundle"
     echo ""
     echo "  CATALOG_REGISTRY = ghcr.io"
-    echo "  CATALOG_ORG = stacklok/toolhive"
-    echo "  CATALOG_NAME = operator-catalog"
+    echo "  CATALOG_ORG = stacklok/toolhive-operator-metadata"
+    echo "  CATALOG_NAME = catalog"
     echo ""
     echo "  INDEX_REGISTRY = ghcr.io"
-    echo "  INDEX_ORG = stacklok/toolhive"
-    echo "  INDEX_NAME = operator-index"
+    echo "  INDEX_ORG = stacklok/toolhive-operator-metadata"
+    echo "  INDEX_NAME = index"
     echo ""
 fi
 echo ""

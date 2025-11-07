@@ -5,14 +5,14 @@
 # to pre-generate the catalog cache for optimized startup performance.
 #
 # Build command:
-#   podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/operator-catalog:v0.4.2 .
+#   podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive-operator-metadata/catalog:v0.4.2 .
 #   or: make catalog-build
 #
 # Validation command (after build):
-#   opm validate ghcr.io/stacklok/toolhive/operator-catalog:v0.4.2
+#   opm validate ghcr.io/stacklok/toolhive-operator-metadata/catalog:v0.4.2
 #
 # Local testing:
-#   podman run -d -p 50051:50051 --name catalog-test ghcr.io/stacklok/toolhive/operator-catalog:v0.4.2
+#   podman run -d -p 50051:50051 --name catalog-test ghcr.io/stacklok/toolhive-operator-metadata/catalog:v0.4.2
 #   grpcurl -plaintext localhost:50051 api.Registry/ListPackages
 
 # ============================================================================

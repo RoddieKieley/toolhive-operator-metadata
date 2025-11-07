@@ -4,13 +4,13 @@
 # and metadata for deployment via OLMv0 on legacy Kubernetes/OpenShift clusters.
 #
 # Build command:
-#   podman build -f Containerfile.bundle -t ghcr.io/stacklok/toolhive/operator-bundle:v0.4.2 .
+#   podman build -f Containerfile.bundle -t ghcr.io/stacklok/toolhive-operator-metadata/bundle:v0.4.2 .
 #
 # Validation command (before build):
 #   /opt/operator-sdk/bin/operator-sdk --plugins go.kubebuilder.io/v4 bundle validate ./bundle --select-optional suite=operatorframework
 #
 # Validation command (after build):
-#   /opt/operator-sdk/bin/operator-sdk --plugins go.kubebuilder.io/v4 bundle validate ghcr.io/stacklok/toolhive/operator-bundle:v0.4.2
+#   /opt/operator-sdk/bin/operator-sdk --plugins go.kubebuilder.io/v4 bundle validate ghcr.io/stacklok/toolhive-operator-metadata/bundle:v0.4.2
 
 # Use scratch base image for minimal size and security
 # Bundle images are data-only (no executables needed)

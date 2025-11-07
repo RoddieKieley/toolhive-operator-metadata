@@ -51,7 +51,7 @@ make olm-all
 
 # Or manually
 opm validate catalog/
-podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive/operator-catalog:v0.4.2 .
+podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive-operator-metadata/catalog:v0.4.2 .
 ```
 
 #### Custom Operator Icons

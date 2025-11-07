@@ -32,7 +32,7 @@ spec:
 
   # Catalog image with integrated registry-server
   # This image runs 'opm serve /configs --cache-dir=/tmp/cache'
-  image: ghcr.io/stacklok/toolhive/operator-catalog:v0.4.2
+  image: ghcr.io/stacklok/toolhive-operator-metadata/catalog:v0.4.2
 
   # Display name shown in OperatorHub UI
   displayName: ToolHive Operator Catalog

@@ -75,7 +75,6 @@ jobs:
 
       - name: Tag and push index image
         run: |
-
           # Push version tag
           docker push "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:${{ steps.version.outputs.VERSION }}"
 

@@ -16,6 +16,16 @@ jobs:
 
       - name: Set up dependencies
         run: |
+          # Install yq for YAML processing (required by make bundle)
+          sudo wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/bin/yq
+
+          # Install operator-sdk for bundle generation
+          OPERATOR_SDK_VERSION=v1.41.0
+          curl -LO https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk_linux_amd64
+          sudo mv operator-sdk_linux_amd64 /usr/local/bin/operator-sdk
+          sudo chmod +x /usr/local/bin/operator-sdk
+
           # Install opm (Operator Package Manager) for FBC validation
           OPM_VERSION=v1.35.0
           curl -LO https://github.com/operator-framework/operator-registry/releases/download/${OPM_VERSION}/linux-amd64-opm
@@ -34,13 +44,33 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "✅ Extracted VERSION: $VERSION"
 
+      - name: Generate bundle manifests
+        run: |
+          echo "📦 Generating bundle manifests with 'make bundle'..."
+          make bundle
+          if [ $? -ne 0 ]; then
+            echo "❌ ERROR: 'make bundle' failed"
+            exit 1
+          fi
+          echo "✅ Bundle manifests generated successfully"
+
+      - name: Generate FBC catalog metadata
+        run: |
+          echo "📚 Generating FBC catalog metadata with 'make catalog'..."
+          make catalog
+          if [ $? -ne 0 ]; then
+            echo "❌ ERROR: 'make catalog' failed"
+            exit 1
+          fi
+          echo "✅ FBC catalog metadata generated successfully"
+
       - name: Validate File-Based Catalog structure
         run: |
           echo "🔍 Validating File-Based Catalog (FBC) structure..."
           make catalog-validate
           if [ $? -ne 0 ]; then
             echo "❌ ERROR: FBC validation failed with 'make catalog-validate'"
-            echo "Please ensure the catalog structure in catalogs/ is valid"
+            echo "Please ensure the catalog structure in catalog/ is valid"
             exit 1
           fi
           echo "✅ FBC structure validated successfully"

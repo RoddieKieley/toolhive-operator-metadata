@@ -76,8 +76,8 @@ jobs:
       - name: Tag and push index image
         run: |
           # Tag with 'latest' in addition to version tag
-          docker tag "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:${{ steps.version.outputs.VERSION }}" \
-                       "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:latest"
+          docker tag "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:${{ steps.version.outputs.VERSION }}"
+          docker tag "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:latest"
 
           # Push both tags
           docker push "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:${{ steps.version.outputs.VERSION }}"

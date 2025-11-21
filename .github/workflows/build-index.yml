@@ -59,6 +59,10 @@ jobs:
           # Override image variables to use repository-based naming
           export BUNDLE_IMG="ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/bundle:${{ steps.version.outputs.BUNDLE_TAG }}"
           export INDEX_OLMV0_IMG="ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:${{ steps.version.outputs.VERSION }}"
+          export BUNDLE_ORG=${{ steps.repository_lowercase.outputs.repository_lowercase }}
+          export INDEX_ORG=${{ steps.repository_lowercase.outputs.repository_lowercase }}
+          export CATALOG_ORG=${{ steps.repository_lowercase.outputs.repository_lowercase }}
+          export OPERATOR_ORG=${{ steps.repository_lowercase.outputs.repository_lowercase }}
 
           echo "  Bundle reference: $BUNDLE_IMG"
           echo "  Index target: $INDEX_OLMV0_IMG"

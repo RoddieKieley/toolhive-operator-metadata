@@ -63,6 +63,7 @@ jobs:
           export INDEX_ORG=${{ steps.repository_lowercase.outputs.repository_lowercase }}
           export CATALOG_ORG=${{ steps.repository_lowercase.outputs.repository_lowercase }}
           export OPERATOR_ORG=${{ steps.repository_lowercase.outputs.repository_lowercase }}
+          export CONTAINER_TOOL=docker
 
           echo "  Bundle reference: $BUNDLE_IMG"
           echo "  Index target: $INDEX_OLMV0_IMG"
@@ -77,20 +78,17 @@ jobs:
           fi
           echo "✅ Index image built successfully"
 
-      - name: Tag and push index image
+      - name: Push index images
         run: |
-          echo "Pushing and tagging index image..."
+          echo "Pushing index images..."
 
           # Push version tag
           docker push "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:${{ steps.version.outputs.VERSION }}"
 
-          # Tag with 'latest' in addition to version tag
-          docker tag "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:${{ steps.version.outputs.VERSION }}" "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:latest"
-
           # Push latest tag
           docker push "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:latest"
 
-          echo "✅ Index image pushed successfully"
+          echo "✅ Index images pushed successfully"
 
       - name: Display published image URLs
         run: |

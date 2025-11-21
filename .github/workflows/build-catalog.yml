@@ -1,7 +1,7 @@
 name: Build and Publish Catalog Image (OLMv1)
 
 on:
-  workflow_dispatch:
+  push:
 
 permissions:
   packages: write
@@ -48,11 +48,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Set lowercase actor name
+        id: actor_lowercase
+        run: echo "actor_lowercase=${GITHUB_ACTOR@L}" >> $GITHUB_OUTPUT
+
+      - name: Set lowercase repository name
+        id: repository_lowercase
+        run: echo "repository_lowercase=${GITHUB_REPOSITORY@L}" > $GITHUB_OUTPUT
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ steps.actor_lowercase.outputs.actor_lowercase }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push catalog image
@@ -62,8 +70,8 @@ jobs:
           file: ./Containerfile.catalog
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/catalog:${{ steps.version.outputs.VERSION }}
-            ghcr.io/${{ github.repository }}/catalog:latest
+            ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/catalog:${{ steps.version.outputs.VERSION }}
+            ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/catalog:latest
 
       - name: Display published image URLs
         run: |

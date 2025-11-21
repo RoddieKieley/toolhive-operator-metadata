@@ -1,7 +1,7 @@
 name: Build and Publish Index Image (OLMv0)
 
 on:
-  workflow_dispatch:
+  push:
 
 permissions:
   packages: write
@@ -37,11 +37,19 @@ jobs:
           echo "✅ Extracted VERSION: $VERSION"
           echo "✅ Extracted BUNDLE_TAG: $BUNDLE_TAG"
 
+      - name: Set lowercase actor name
+        id: actor_lowercase
+        run: echo "actor_lowercase=${GITHUB_ACTOR@L}" >> $GITHUB_OUTPUT
+
+      - name: Set lowercase repository name
+        id: repository_lowercase
+        run: echo "repository_lowercase=${GITHUB_REPOSITORY@L}" > $GITHUB_OUTPUT
+  
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ steps.actor_lowercase.outputs.actor_lowercase }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build OLMv0 index image
@@ -49,8 +57,8 @@ jobs:
           echo "🔨 Building OLMv0 index image (SQLite-based, for legacy OpenShift 4.15-4.18)..."
 
           # Override image variables to use repository-based naming
-          export BUNDLE_IMG="ghcr.io/${{ github.repository }}/bundle:${{ steps.version.outputs.BUNDLE_TAG }}"
-          export INDEX_OLMV0_IMG="ghcr.io/${{ github.repository }}/index:${{ steps.version.outputs.VERSION }}"
+          export BUNDLE_IMG="ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/bundle:${{ steps.version.outputs.BUNDLE_TAG }}"
+          export INDEX_OLMV0_IMG="ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:${{ steps.version.outputs.VERSION }}"
 
           echo "  Bundle reference: $BUNDLE_IMG"
           echo "  Index target: $INDEX_OLMV0_IMG"
@@ -67,13 +75,16 @@ jobs:
 
       - name: Tag and push index image
         run: |
-          # Tag with 'latest' in addition to version tag
-          docker tag "ghcr.io/${{ github.repository }}/index:${{ steps.version.outputs.VERSION }}" \
-                     "ghcr.io/${{ github.repository }}/index:latest"
+          echo "Pushing and tagging index image..."
 
-          # Push both tags
-          docker push "ghcr.io/${{ github.repository }}/index:${{ steps.version.outputs.VERSION }}"
-          docker push "ghcr.io/${{ github.repository }}/index:latest"
+          # Push version tag
+          docker push "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:${{ steps.version.outputs.VERSION }}"
+
+          # Tag with 'latest' in addition to version tag
+          docker tag "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:${{ steps.version.outputs.VERSION }}" "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:latest"
+
+          # Push latest tag
+          docker push "ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:latest"
 
           echo "✅ Index image pushed successfully"
 
@@ -82,8 +93,8 @@ jobs:
           echo "✅ Index image published successfully!"
           echo ""
           echo "📍 Published to:"
-          echo "   ghcr.io/${{ github.repository }}/index:${{ steps.version.outputs.VERSION }}"
-          echo "   ghcr.io/${{ github.repository }}/index:latest"
+          echo "   ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:${{ steps.version.outputs.VERSION }}"
+          echo "   ghcr.io/${{ steps.repository_lowercase.outputs.repository_lowercase }}/index:latest"
           echo ""
           echo "🔗 View package: https://github.com/${{ github.repository }}/pkgs/container/index"
           echo ""

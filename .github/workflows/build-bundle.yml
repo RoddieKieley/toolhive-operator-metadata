@@ -2,7 +2,11 @@ name: Build and Publish Bundle Image
 
 on:
   workflow_dispatch:
-
+    inputs:
+      branch:
+        description: 'Branch to run workflow on'
+        required: true
+        default: '014-github-build-actions'
 permissions:
   packages: write
   contents: read

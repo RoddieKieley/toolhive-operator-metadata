@@ -63,6 +63,7 @@ jobs:
           export INDEX_ORG=${{ steps.repository_lowercase.outputs.repository_lowercase }}
           export CATALOG_ORG=${{ steps.repository_lowercase.outputs.repository_lowercase }}
           export OPERATOR_ORG=${{ steps.repository_lowercase.outputs.repository_lowercase }}
+          export CONTAINER_TOOL=docker
 
           echo "  Bundle reference: $BUNDLE_IMG"
           echo "  Index target: $INDEX_OLMV0_IMG"

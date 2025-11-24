@@ -27,7 +27,8 @@ jobs:
           sudo chmod +x /usr/local/bin/operator-sdk
 
           # Install opm (Operator Package Manager) for FBC validation
-          OPM_VERSION=v1.35.0
+          # Using v1.49.0 for better bundle rendering support (v1.35.0 has issues with schema detection)
+          OPM_VERSION=v1.49.0
           curl -LO https://github.com/operator-framework/operator-registry/releases/download/${OPM_VERSION}/linux-amd64-opm
           sudo mv linux-amd64-opm /usr/local/bin/opm
           sudo chmod +x /usr/local/bin/opm

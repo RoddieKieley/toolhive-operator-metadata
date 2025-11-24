@@ -245,7 +245,8 @@ catalog: bundle ## Generate FBC catalog metadata from bundle
 	@echo "# Note: image field removed - using embedded olm.bundle.object data only" >> catalog/toolhive-operator/catalog.yaml
 	@echo "# Icon inheritance: opm render automatically embeds the CSV (with custom/default icon)" >> catalog/toolhive-operator/catalog.yaml
 	@echo "#   into olm.bundle.object, so catalog inherits whatever icon was set in bundle target" >> catalog/toolhive-operator/catalog.yaml
-	@opm render bundle/ -o yaml | sed '1d' | sed '/^image:/d' >> catalog/toolhive-operator/catalog.yaml
+	@echo "schema: olm.bundle" >> catalog/toolhive-operator/catalog.yaml
+	@opm render bundle/ -o yaml | sed '1d' | sed '/^image:/d' | sed '/^schema:/d' >> catalog/toolhive-operator/catalog.yaml
 	@echo "Converting olm.bundle.object JSON to YAML encoding..."
 	@scripts/convert-catalog-json-to-yaml.sh catalog/toolhive-operator/catalog.yaml
 	@echo "✅ Catalog generated successfully with embedded bundle objects (YAML-encoded)"

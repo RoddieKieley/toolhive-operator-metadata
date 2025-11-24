@@ -82,6 +82,12 @@ All OLM bundles MUST pass operator-sdk scorecard validation tests before being c
 
 Passing scorecard tests ensures the operator bundle is compatible with OLM, reduces deployment failures, and maintains compliance with Operator Framework standards. Scorecard failures often indicate subtle configuration errors that would otherwise surface as runtime failures in production environments.
 
+### VIII. GitHub Actions Actor Lowercase Requirement (NON-NEGOTIABLE)
+
+All GitHub Actions workflows that authenticate to GitHub Container Registry (ghcr.io) MUST convert the `github.actor` context variable to lowercase before using it as a username. The GitHub Container Registry requires lowercase usernames, but `github.actor` may contain uppercase characters depending on the user's GitHub username.
+
+**Rationale**: GitHub Container Registry authentication fails when usernames contain uppercase characters, even though GitHub allows uppercase letters in usernames. This external system constraint has been validated through testing and affects all workflows that push container images to ghcr.io. Failing to lowercase the actor name results in authentication failures that prevent image publication.
+
 ## Kustomize Build Standards
 
 All kustomize manifests MUST:
@@ -131,5 +137,6 @@ When adding manifests for OpenDataHub integration, developers MUST:
 7. OLM catalog contains valid `olm.package`, `olm.channel`, and `olm.bundle` blobs
 8. operator-sdk commands specify `go.kubebuilder.io/v4` plugin where applicable
 9. `operator-sdk scorecard bundle/` passes all required tests
+10. GitHub Actions workflows that authenticate to ghcr.io convert `github.actor` to lowercase
 
-**Version**: 1.2.1 | **Ratified**: 2025-10-07 | **Last Amended**: 2025-10-28
+**Version**: 1.3.0 | **Ratified**: 2025-10-07 | **Last Amended**: 2025-11-21

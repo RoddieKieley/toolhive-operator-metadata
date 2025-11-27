@@ -1,7 +1,12 @@
 name: Build and Publish Bundle Image
 
 on:
-  push:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run workflow on'
+        required: true
+        default: 'main'
 
 permissions:
   packages: write

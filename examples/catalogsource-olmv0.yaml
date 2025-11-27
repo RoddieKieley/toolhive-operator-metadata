@@ -36,7 +36,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   name: toolhive-catalog-olmv0
-  namespace: olm
+  namespace: openshift-marketplace
 spec:
   # Source type: grpc (image-based catalog served via gRPC API)
   sourceType: grpc

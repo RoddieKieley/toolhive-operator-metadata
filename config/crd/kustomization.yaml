@@ -8,6 +8,8 @@ resources:
 - bases/toolhive.stacklok.dev_mcpremoteproxies.yaml
 - bases/toolhive.stacklok.dev_mcpservers.yaml
 - bases/toolhive.stacklok.dev_mcptoolconfigs.yaml
+- bases/toolhive.stacklok.dev_virtualmcpcompositetooldefinitions.yaml
+- bases/toolhive.stacklok.dev_virtualmcpservers.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:

@@ -106,6 +106,8 @@ rules:
   - mcpremoteproxies
   - mcpservers
   - mcptoolconfigs
+  - virtualmcpcompositetooldefinitions
+  - virtualmcpservers
   verbs:
   - create
   - delete
@@ -123,6 +125,8 @@ rules:
   - mcpremoteproxies/finalizers
   - mcpservers/finalizers
   - mcptoolconfigs/finalizers
+  - virtualmcpcompositetooldefinitions/finalizers
+  - virtualmcpservers/finalizers
   verbs:
   - update
 - apiGroups:
@@ -134,7 +138,22 @@ rules:
   - mcpremoteproxies/status
   - mcpservers/status
   - mcptoolconfigs/status
+  - virtualmcpcompositetooldefinitions/status
+  - virtualmcpservers/status
   verbs:
   - get
   - patch
   - update
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - gateways
+  - httproutes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch

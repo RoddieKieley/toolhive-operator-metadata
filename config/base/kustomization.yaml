@@ -35,6 +35,17 @@ replacements:
           name: controller-manager
         fieldPaths:
           - spec.template.spec.containers.[name=manager].env.[name=TOOLHIVE_RUNNER_IMAGE].value
+  - source:
+      kind: ConfigMap
+      version: v1
+      name: toolhive-operator-parameters
+      fieldPath: data.toolhive-vmcp-image
+    targets:
+      - select:
+          kind: Deployment
+          name: controller-manager
+        fieldPaths:
+          - spec.template.spec.containers.[name=manager].env.[name=TOOLHIVE_VMCP_IMAGE].value
 
 patches:
   - path: openshift_sec_patches.yaml

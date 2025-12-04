@@ -9,7 +9,7 @@
 CATALOG_REGISTRY ?= ghcr.io
 CATALOG_ORG ?= stacklok/toolhive-operator-metadata
 CATALOG_NAME ?= catalog
-CATALOG_TAG ?= v0.4.2
+CATALOG_TAG ?= v0.6.11
 CATALOG_IMG := $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):$(CATALOG_TAG)
 
 # OLMv0 Bundle Image Configuration
@@ -18,7 +18,7 @@ CATALOG_IMG := $(CATALOG_REGISTRY)/$(CATALOG_ORG)/$(CATALOG_NAME):$(CATALOG_TAG)
 BUNDLE_REGISTRY ?= ghcr.io
 BUNDLE_ORG ?= stacklok/toolhive-operator-metadata
 BUNDLE_NAME ?= bundle
-BUNDLE_TAG ?= v0.4.2
+BUNDLE_TAG ?= v0.6.11
 BUNDLE_IMG := $(BUNDLE_REGISTRY)/$(BUNDLE_ORG)/$(BUNDLE_NAME):$(BUNDLE_TAG)
 
 # OLMv0 Index Image Configuration (Legacy OpenShift 4.15-4.18)
@@ -27,7 +27,7 @@ BUNDLE_IMG := $(BUNDLE_REGISTRY)/$(BUNDLE_ORG)/$(BUNDLE_NAME):$(BUNDLE_TAG)
 INDEX_REGISTRY ?= ghcr.io
 INDEX_ORG ?= stacklok/toolhive-operator-metadata
 INDEX_NAME ?= index
-INDEX_TAG ?= v0.4.2
+INDEX_TAG ?= v0.6.11
 INDEX_OLMV0_IMG := $(INDEX_REGISTRY)/$(INDEX_ORG)/$(INDEX_NAME):$(INDEX_TAG)
 
 # Build tool configuration
@@ -38,7 +38,7 @@ CONTAINER_TOOL ?= podman
 OPERATOR_REGISTRY ?= ghcr.io
 OPERATOR_ORG ?= stacklok/toolhive
 OPERATOR_NAME ?= operator
-OPERATOR_TAG ?= v0.4.2
+OPERATOR_TAG ?= v0.6.11
 OPERATOR_IMG := $(OPERATOR_REGISTRY)/$(OPERATOR_ORG)/$(OPERATOR_NAME):$(OPERATOR_TAG)
 
 .PHONY: help

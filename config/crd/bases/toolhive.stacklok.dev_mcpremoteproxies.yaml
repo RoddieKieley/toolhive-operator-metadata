@@ -158,9 +158,32 @@ spec:
                         description: ClientID is the OIDC client ID
                         type: string
                       clientSecret:
-                        description: ClientSecret is the client secret for introspection
-                          (optional)
+                        description: |-
+                          ClientSecret is the client secret for introspection (optional)
+                          Deprecated: Use ClientSecretRef instead for better security
                         type: string
+                      clientSecretRef:
+                        description: |-
+                          ClientSecretRef is a reference to a Kubernetes Secret containing the client secret
+                          If both ClientSecret and ClientSecretRef are provided, ClientSecretRef takes precedence
+                        properties:
+                          key:
+                            description: Key is the key within the secret
+                            type: string
+                          name:
+                            description: Name is the name of the secret
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      insecureAllowHTTP:
+                        default: false
+                        description: |-
+                          InsecureAllowHTTP allows HTTP (non-HTTPS) OIDC issuers for development/testing
+                          WARNING: This is insecure and should NEVER be used in production
+                          Only enable for local development, testing, or trusted internal networks
+                        type: boolean
                       introspectionUrl:
                         description: IntrospectionURL is the URL for token introspection
                           endpoint
@@ -182,6 +205,12 @@ spec:
                       jwksUrl:
                         description: JWKSURL is the URL to fetch the JWKS from
                         type: string
+                      protectedResourceAllowPrivateIP:
+                        default: false
+                        description: |-
+                          ProtectedResourceAllowPrivateIP allows protected resource endpoint on private IP addresses
+                          Use with caution - only enable for trusted internal IDPs or testing
+                        type: boolean
                       thvCABundlePath:
                         description: |-
                           ThvCABundlePath is the path to CA certificate bundle file for HTTPS requests
@@ -275,6 +304,7 @@ spec:
                         description: |-
                           Env are environment variables to set in the proxy container (thv run process)
                           These affect the toolhive proxy itself, not the MCP server it manages
+                          Use TOOLHIVE_DEBUG=true to enable debug logging in the proxy
                         items:
                           description: EnvVar represents an environment variable in
                             a container

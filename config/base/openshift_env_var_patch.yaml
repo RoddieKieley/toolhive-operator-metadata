@@ -3,3 +3,8 @@
   value:
     name: OPERATOR_OPENSHIFT
     value: "true"
+- op: add
+  path: /spec/template/spec/containers/0/env/-
+  value:
+    name: TOOLHIVE_VMCP_IMAGE
+    value: placeholder-will-be-replaced-by-kustomize

@@ -108,6 +108,23 @@ spec:
         resources:
           - kind: ConfigMap
             version: v1
+      - description: VirtualMCPCompositeToolDefinition defines composite tool workflows for virtual MCP servers
+        displayName: Virtual MCP Composite Tool Definition
+        kind: VirtualMCPCompositeToolDefinition
+        name: virtualmcpcompositetooldefinitions.toolhive.stacklok.dev
+        version: v1alpha1
+      - description: VirtualMCPServer manages virtual MCP server instances that aggregate multiple backend MCP servers
+        displayName: Virtual MCP Server
+        kind: VirtualMCPServer
+        name: virtualmcpservers.toolhive.stacklok.dev
+        version: v1alpha1
+        resources:
+          - kind: Deployment
+            version: v1
+          - kind: Service
+            version: v1
+          - kind: MCPGroup
+            version: v1alpha1
   description: |
     ToolHive Operator manages Model Context Protocol (MCP) servers and registries on Kubernetes.
 
@@ -118,6 +135,8 @@ spec:
     - **MCPRemoteProxy**: Configures remote proxy connections for MCP servers
     - **MCPExternalAuthConfig**: Configures external authentication providers for MCP servers
     - **MCPToolConfig**: Configures individual tools within MCP servers
+    - **VirtualMCPServer**: Manages virtual MCP server instances that aggregate multiple backends
+    - **VirtualMCPCompositeToolDefinition**: Defines composite tool workflows for virtual MCP servers
 
     MCP enables AI assistants to securely access external tools and data sources.
   displayName: ToolHive Operator

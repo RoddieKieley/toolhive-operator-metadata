@@ -2,7 +2,7 @@
 # Generate ClusterServiceVersion from kustomize configuration
 #
 # Usage: generate-csv-from-kustomize.sh <version> <output-file>
-# Example: generate-csv-from-kustomize.sh v0.4.2 downloaded/toolhive-operator/0.4.2/toolhive-operator.clusterserviceversion.yaml
+# Example: generate-csv-from-kustomize.sh v0.6.11 downloaded/toolhive-operator/0.6.11/toolhive-operator.clusterserviceversion.yaml
 
 set -e
 
@@ -11,7 +11,7 @@ OUTPUT_FILE="${2}"
 
 if [ -z "$VERSION" ] || [ -z "$OUTPUT_FILE" ]; then
     echo "Usage: $0 <version> <output-file>"
-    echo "Example: $0 v0.4.2 downloaded/toolhive-operator/0.4.2/toolhive-operator.clusterserviceversion.yaml"
+    echo "Example: $0 v0.6.11 downloaded/toolhive-operator/0.6.11/toolhive-operator.clusterserviceversion.yaml"
     exit 1
 fi
 

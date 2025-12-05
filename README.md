@@ -24,9 +24,9 @@ Automated container image builds are available via GitHub Actions for bundle, in
 3. Click "Run workflow" → Choose branch → Run
 
 **Published Images**:
-- Bundle: `ghcr.io/stacklok/toolhive-operator-metadata/bundle:v0.4.2`
-- Index: `ghcr.io/stacklok/toolhive-operator-metadata/index:v0.4.2`
-- Catalog: `ghcr.io/stacklok/toolhive-operator-metadata/catalog:v0.4.2`
+- Bundle: `ghcr.io/stacklok/toolhive-operator-metadata/bundle:v0.6.11`
+- Index: `ghcr.io/stacklok/toolhive-operator-metadata/index:v0.6.11`
+- Catalog: `ghcr.io/stacklok/toolhive-operator-metadata/catalog:v0.6.11`
 
 For detailed workflow usage and troubleshooting, see [specs/014-github-build-actions/quickstart.md](specs/014-github-build-actions/quickstart.md).
 
@@ -72,7 +72,7 @@ make olm-all
 
 # Or manually
 opm validate catalog/
-podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive-operator-metadata/catalog:v0.4.2 .
+podman build -f Containerfile.catalog -t ghcr.io/stacklok/toolhive-operator-metadata/catalog:v0.6.11 .
 ```
 
 #### Custom Operator Icons
@@ -212,11 +212,11 @@ make scorecard-test         # Run scorecard validation
 
 All validation results are documented in [VALIDATION.md](VALIDATION.md).
 
-**Current status**: ✅ All validations passing (v0.4.2)
+**Current status**: ✅ All validations passing (v0.6.11)
 
 - FBC Schema: ✅ opm validate passed
-- Bundle Structure: ✅ Complete and correct (1 CSV + 6 CRDs)
-- Scorecard Tests: ✅ All 6 tests passing
+- Bundle Structure: ✅ Complete and correct (1 CSV + 8 CRDs)
+- Scorecard Tests: ✅ All tests passing
 - Constitution Compliance: ✅ All 7 principles satisfied
 - Catalog Image: ✅ Built successfully
 

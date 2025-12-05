@@ -6,9 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This repository contains Kubernetes/OpenShift manifest metadata for the ToolHive Operator, which manages MCP (Model Context Protocol) servers and registries. It uses Kustomize for manifest customization and is built with Kubebuilder v3.
 
-The operator manages two primary custom resources:
+The operator manages multiple custom resources including:
 - **MCPRegistry** (`mcpregistries.toolhive.stacklok.dev`) - Manages registries of MCP servers
 - **MCPServer** (`mcpservers.toolhive.stacklok.dev`) - Manages individual MCP server instances
+- **VirtualMCPServer** (`virtualmcpservers.toolhive.stacklok.dev`) - Manages virtual MCP servers (v0.6.x+)
+- **VirtualMCPCompositeToolDefinition** (`virtualmcpcompositetooldefinitions.toolhive.stacklok.dev`) - Defines composite tool workflows (v0.6.x+)
 
 ## Building Manifests
 
@@ -25,7 +27,7 @@ kustomize build config/default
 ## Repository Structure
 
 - **config/base/** - OpenShift-specific customizations with ConfigMap-based parameter management
-  - `params.env` - Container image references (toolhive-operator-image, toolhive-proxy-image)
+  - `params.env` - Container image references (toolhive-operator-image, toolhive-proxy-image, toolhive-vmcp-image)
   - `openshift_env_var_patch.yaml` - Adds OPERATOR_OPENSHIFT env var
   - `openshift_sec_patches.yaml` - Security context patches (seccompProfile, removes runAsUser)
   - `openshift_res_utilization.yaml` - Increased resource limits for OpenShift
@@ -38,10 +40,10 @@ kustomize build config/default
   - Resources: CRDs, RBAC, manager deployment, metrics service
 
 - **config/manager/** - Controller deployment manifests
-  - Default images: `ghcr.io/stacklok/toolhive/operator:v0.4.2` and `ghcr.io/stacklok/toolhive/proxyrunner:v0.4.2`
+  - Default images: `ghcr.io/stacklok/toolhive/operator:v0.6.11`, `ghcr.io/stacklok/toolhive/proxyrunner:v0.6.11`, and `ghcr.io/stacklok/toolhive/vmcp:v0.6.11`
   - Metrics port: 8080, Health port: 8081
 
-- **config/crd/** - Custom Resource Definitions for MCPRegistry and MCPServer
+- **config/crd/** - Custom Resource Definitions (8 CRDs including VirtualMCPServer and VirtualMCPCompositeToolDefinition)
 
 - **config/rbac/** - Service accounts, roles, and bindings
 

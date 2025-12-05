@@ -12,7 +12,7 @@
 #
 # Prerequisites:
 #   - OpenShift 4.15-4.18 or Kubernetes with OLM v0
-#   - Index image available: ghcr.io/stacklok/toolhive-operator-metadata/index:v0.4.2
+#   - Index image available: ghcr.io/stacklok/toolhive-operator-metadata/index:v0.6.11
 #   - Index image built using: make index-olmv0-build
 #
 # Usage:
@@ -43,8 +43,8 @@ spec:
 
   # Index image: OLMv0 SQLite-based index (DEPRECATED)
   # This image contains a SQLite database at /database/index.db
-  # The database references the bundle image: ghcr.io/stacklok/toolhive-operator-metadata/bundle:v0.4.2
-  image: ghcr.io/stacklok/toolhive-operator-metadata/index:v0.4.2
+  # The database references the bundle image: ghcr.io/stacklok/toolhive-operator-metadata/bundle:v0.6.11
+  image: ghcr.io/stacklok/toolhive-operator-metadata/index:v0.6.11
 
   # Display name shown in OperatorHub (indicates legacy format)
   displayName: ToolHive Operator Catalog (Legacy)

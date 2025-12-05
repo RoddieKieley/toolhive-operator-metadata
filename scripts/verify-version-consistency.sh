@@ -2,7 +2,7 @@
 # Verify all version references are consistent across the repository
 #
 # Usage: verify-version-consistency.sh [expected-version]
-# Example: verify-version-consistency.sh v0.4.2
+# Example: verify-version-consistency.sh v0.6.11
 
 set -e
 
